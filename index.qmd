@@ -1,6 +1,6 @@
 ---
 title: "Análisis de conglomerados y técnicas de agrupamiento"
-subtitle: "Aprendizaje no supervisado aplicado a la administración pública con R"
+subtitle: "Aprendizaje no supervisado aplicado con R"
 author: 
   - name: Dagoberto Salgado Horta
     affiliation: "Escuela Superior de Administración Pública"
