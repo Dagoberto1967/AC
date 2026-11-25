@@ -1,0 +1,955 @@
+---
+title: "Análisis de conglomerados y técnicas de agrupamiento"
+subtitle: "Aprendizaje no supervisado aplicado con R"
+author: 
+  - name: Dagoberto Salgado Horta
+    affiliation: "Escuela Superior de Administración Pública"
+    affiliation-url: "https://www.esap.edu.co/"
+date: today
+lang: es
+title-block-banner: "#98b6ed"
+
+format:
+  html:
+    page-layout: full
+    fontsize: 14pt
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    code-fold: true
+    code-summary: "Ver código"
+    theme: dark
+    highlight-style: monokai
+    html-math-method: katex
+    smooth-scroll: true
+    link-external-newwindow: true
+    code-overflow: scroll
+    favicon: favicon.ico
+    css: estilos.css
+    
+editor: visual
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    fig.align: center
+    fig.width: 6
+    fig.height: 6
+    out.width: "70%"
+---
+
+```{=html}
+<div style="position:absolute; top:10px; right:10px;">
+<img src="Logo_Esap.png" width="150">
+</div>
+```
+
+```{=html}
+<style>
+body{
+  background-color:#f7f6ed;
+  font-size:130%;
+  text-align:justify;
+}
+</style>
+```
+
+# .Cargar paquetes
+
+```{r}
+ipak <- function(pkg){
+
+  options(repos = c(CRAN="https://cloud.r-project.org"))
+
+  new.pkg <- pkg[!(pkg %in% rownames(installed.packages()))]
+
+  if(length(new.pkg)) install.packages(new.pkg, dependencies = TRUE)
+
+  invisible(lapply(pkg, function(p)
+    suppressPackageStartupMessages(library(p, character.only = TRUE))
+  ))
+}
+
+packages <- c("tidyverse","kableExtra","psych","readxl")
+
+ipak(packages)
+```
+
+# .Presentación
+
+Las entidades públicas recopilan información sobre municipios, barrios, usuarios, instituciones educativas, centros de salud y programas sociales. En muchas situaciones no existen categorías previamente definidas que permitan clasificar estas unidades. El análisis de conglomerados, también conocido como *clustering* o agrupamiento, permite identificar grupos de observaciones que presentan características similares.
+
+A diferencia de los modelos supervisados, las técnicas de agrupamiento no necesitan una variable respuesta conocida. Su propósito es descubrir estructuras o patrones presentes en los datos. Por esta razón, hacen parte del **aprendizaje no supervisado**.
+
+En este módulo se presentan los fundamentos del análisis de conglomerados y se desarrollan ejemplos en R utilizando técnicas como k-means, agrupamiento jerárquico y DBSCAN. Las aplicaciones se contextualizan en problemas de gestión pública.
+
+## .Resultados de aprendizaje
+
+Al finalizar el módulo, el estudiante estará en capacidad de:
+
+- Explicar el concepto de aprendizaje no supervisado y análisis de conglomerados.
+- Reconocer la importancia de la preparación y estandarización de los datos.
+- Calcular e interpretar medidas de distancia o disimilitud.
+- Aplicar el algoritmo k-means y seleccionar un número razonable de grupos.
+- Construir e interpretar dendrogramas mediante agrupamiento jerárquico.
+- Reconocer las características del algoritmo DBSCAN.
+- Evaluar la calidad y utilidad de una solución de agrupamiento.
+- Interpretar los grupos identificados en situaciones de administración pública.
+
+# .Fundamentos del análisis de conglomerados
+
+## .¿Qué es el análisis de conglomerados?
+
+El análisis de conglomerados es un conjunto de técnicas estadísticas y computacionales cuyo objetivo es dividir un conjunto de observaciones en grupos, de manera que:
+
+- Las observaciones pertenecientes a un mismo grupo sean relativamente similares.
+- Las observaciones de grupos diferentes sean relativamente distintas.
+
+Cada grupo recibe el nombre de conglomerado, clúster o segmento.
+
+Por ejemplo, una gobernación puede disponer de indicadores socioeconómicos de 47 municipios y buscar agrupaciones de municipios con condiciones similares de pobreza, cobertura educativa, acceso a servicios públicos y empleo. Los resultados podrían contribuir a identificar necesidades territoriales diferenciadas.
+
+El algoritmo no conoce previamente cuáles municipios deben pertenecer a cada grupo: la estructura se descubre a partir de los datos y de las decisiones metodológicas del analista.
+
+## .Aprendizaje supervisado y no supervisado
+
+| Característica | Supervisado | No supervisado |
+|------------------------|------------------------|------------------------|
+| Variable respuesta | Conocida | No se requiere |
+| Objetivo | Predecir o explicar una respuesta | Descubrir patrones o estructuras |
+| Ejemplos | Regresión y clasificación | Conglomerados y reducción de dimensión |
+| Evaluación | Puede compararse con resultados conocidos | Requiere criterios internos y validación contextual |
+
+En el análisis de conglomerados no existe necesariamente una única clasificación correcta. La solución depende de las variables, la escala, la medida de distancia, el algoritmo y sus parámetros.
+
+## .Aplicaciones en la administración pública
+
+Algunas aplicaciones posibles son:
+
+- **Planeación territorial:** agrupar municipios según indicadores de desarrollo.
+- **Política social:** identificar perfiles de hogares o comunidades con necesidades semejantes.
+- **Educación:** agrupar instituciones según cobertura, deserción, resultados y recursos.
+- **Salud pública:** identificar territorios con perfiles similares de acceso y demanda de servicios.
+- **Gestión institucional:** clasificar dependencias según volumen de trámites, tiempos de atención y recursos.
+- **Seguridad ciudadana:** identificar zonas con patrones similares de incidentes, considerando las limitaciones y los riesgos éticos del uso de estos datos.
+
+Los conglomerados son herramientas exploratorias. No deben interpretarse automáticamente como categorías naturales, diagnósticos individuales ni explicaciones causales.
+
+# .Elementos fundamentales
+
+## .Observaciones y variables
+
+En una matriz de datos:
+
+- Las filas representan las unidades de análisis: municipios, instituciones, barrios o usuarios.
+- Las columnas representan las variables utilizadas para construir los grupos.
+
+Es importante que las variables seleccionadas sean pertinentes para el problema público. Incluir variables irrelevantes puede producir agrupamientos difíciles de interpretar.
+
+## .Medidas de distancia
+
+Los algoritmos de agrupamiento necesitan una forma de cuantificar la similitud o diferencia entre observaciones.
+
+**Distancia euclidiana**
+
+Es una de las medidas más utilizadas para variables cuantitativas:
+
+$$
+d(i,j)=\sqrt{\sum_{k=1}^{p}(x_{ik}-x_{jk})^2}
+$$
+
+Donde:
+
+- $d(i,j)$: distancia entre las observaciones $i$ y $j$.
+- $x_{ik}$: valor de la variable $k$ en la observación $i$.
+- $x_{jk}$: valor de la variable $k$ en la observación $j$.
+- $p$: número de variables.
+
+Una distancia pequeña indica que las observaciones son similares según las variables incluidas.
+
+**Distancia Manhattan**
+
+$$
+d(i,j)=\sum_{k=1}^{p}|x_{ik}-x_{jk}|
+$$
+
+Suma las diferencias absolutas entre las variables de las dos observaciones.
+
+**Distancia de Gower**
+
+Es útil cuando se tienen variables de diferentes tipos, por ejemplo, cuantitativas, ordinales y nominales. Su aplicación requiere seleccionar una implementación adecuada y revisar cómo se tratan los valores faltantes.
+
+## .¿Por qué estandarizar las variables?
+
+Las variables pueden estar medidas en escalas diferentes. Por ejemplo:
+
+- Población: número de habitantes.
+- Pobreza: porcentaje.
+- Ingreso: pesos.
+- Cobertura educativa: porcentaje.
+
+Si se calcula una distancia euclidiana directamente, las variables con escalas numéricas grandes pueden dominar el cálculo.
+
+Una solución habitual es estandarizar mediante puntuaciones Z:
+
+$$
+Z_{ij}=\frac{X_{ij}-\bar X_j}{s_j}
+$$
+
+Donde:
+
+- $X_{ij}$: valor de la observación $i$ en la variable $j$.
+- $\bar X_j$: media de la variable $j$.
+- $s_j$: desviación estándar de la variable $j$.
+
+Después de estandarizar, las variables quedan expresadas en una escala comparable. La decisión de estandarizar debe responder al significado de las variables y al algoritmo utilizado.
+
+# .Técnicas de agrupamiento
+
+## .Algoritmo k-means
+
+K-means es un algoritmo de agrupamiento no jerárquico que divide las observaciones en $K$ grupos. Cada grupo se representa mediante un centroide, que corresponde al vector de medias de las variables para las observaciones asignadas al grupo.
+
+El algoritmo busca minimizar la suma de cuadrados dentro de los conglomerados:
+
+$$
+\underset{C_1,\ldots,C_K}{\operatorname{minimizar}}
+\sum_{k=1}^{K}\sum_{i\in C_k}
+\left\|x_i-\mu_k\right\|^2
+$$
+
+Donde:
+
+- $K$: número de conglomerados.
+- $C_k$: conjunto de observaciones asignadas al grupo $k$.
+- $x_i$: vector de características de la observación $i$.
+- $\mu_k$: centroide del conglomerado $k$.
+
+**Etapas del algoritmo**
+
+1.  Definir el número de conglomerados $K$.
+2.  Seleccionar centros iniciales.
+3.  Asignar cada observación al centroide más cercano.
+4.  Calcular nuevamente los centroides.
+5.  Repetir la asignación y actualización hasta alcanzar un criterio de convergencia.
+
+**Ventajas**
+
+- Es relativamente sencillo de implementar.
+- Funciona bien con datos cuantitativos y grupos compactos.
+- Permite resumir los perfiles de los conglomerados mediante centroides.
+
+**Limitaciones**
+
+- Se debe especificar previamente el número $K$.
+- Es sensible a valores atípicos y a la inicialización.
+- Puede tener dificultades con grupos de formas muy diferentes.
+- La estandarización suele ser importante cuando las variables están en escalas distintas.
+
+## .Selección del número de conglomerados
+
+No existe una regla universal para determinar el número óptimo de grupos. Se pueden combinar diferentes criterios.
+
+**Método del codo**
+
+Se calcula la suma de cuadrados dentro de los grupos (WSS, *Within-Cluster Sum of Squares*) para diferentes valores de $K$. Al aumentar el número de conglomerados, el WSS disminuye. Se busca un punto a partir del cual la reducción adicional sea menos pronunciada.
+
+$$
+WSS(K)=\sum_{k=1}^{K}\sum_{i\in C_k}
+\|x_i-\mu_k\|^2
+$$
+
+**Coeficiente de silueta**
+
+La silueta evalúa qué tan bien se encuentra una observación dentro de su propio conglomerado frente a los conglomerados vecinos.
+
+$$
+s(i)=\frac{b(i)-a(i)}{\max\{a(i),b(i)\}}
+$$
+
+Donde:
+
+- $a(i)$: distancia promedio entre la observación $i$ y las demás observaciones de su conglomerado.
+- $b(i)$: menor distancia promedio entre $i$ y las observaciones de otro conglomerado.
+
+La silueta toma valores entre -1 y 1:
+
+- Cercano a 1: observación bien asignada.
+- Cercano a 0: observación ubicada entre dos grupos.
+- Menor que 0: posiblemente está mejor ubicada en otro grupo.
+
+Una silueta promedio mayor puede indicar una solución más definida, pero debe interpretarse junto con el tamaño y la utilidad de los grupos.
+
+## .Agrupamiento jerárquico
+
+El agrupamiento jerárquico construye una estructura de grupos anidados que puede representarse mediante un dendrograma.
+
+En el enfoque aglomerativo:
+
+1.  Cada observación comienza como un conglomerado individual.
+2.  Se identifican los dos conglomerados más cercanos.
+3.  Se fusionan en un nuevo conglomerado.
+4.  Se actualizan las distancias entre grupos.
+5.  Se repite el proceso hasta que todas las observaciones formen un solo grupo.
+
+**Métodos de enlace**
+
+| Método | Característica |
+|------------------------------------|------------------------------------|
+| `single` | Distancia mínima entre observaciones de dos grupos |
+| `complete` | Distancia máxima entre observaciones de dos grupos |
+| `average` | Promedio de las distancias entre observaciones de dos grupos |
+| `ward.D2` | Busca minimizar el incremento de la variabilidad interna al fusionar grupos |
+
+El dendrograma permite explorar diferentes cantidades de conglomerados mediante un corte a una altura determinada.
+
+**Ventajas y limitaciones**
+
+El agrupamiento jerárquico permite visualizar la estructura de similitud sin definir desde el comienzo un número único de grupos. Sin embargo, las fusiones realizadas no se revierten y los resultados pueden depender de la distancia y del método de enlace.
+
+## .DBSCAN
+
+DBSCAN (*Density-Based Spatial Clustering of Applications with Noise*) identifica grupos a partir de la densidad de las observaciones.
+
+Sus parámetros principales son:
+
+- `eps`: radio máximo para considerar que dos observaciones están próximas.
+- `minPts`: número mínimo de observaciones requerido para considerar una región suficientemente densa.
+
+DBSCAN distingue:
+
+- **Puntos núcleo:** tienen al menos `minPts` observaciones dentro de su vecindad.
+- **Puntos frontera:** están cerca de un punto núcleo, pero no tienen suficientes vecinos para ser núcleo.
+- **Ruido:** no pertenece a un grupo según los parámetros definidos.
+
+**Ventajas**
+
+- No exige definir previamente el número de conglomerados.
+- Puede identificar grupos con formas no necesariamente esféricas.
+- Permite identificar observaciones aisladas como ruido.
+
+**Limitaciones**
+
+- Es sensible a la selección de `eps` y `minPts`.
+- Puede tener dificultades cuando los grupos presentan densidades muy diferentes.
+- La escala de las variables y la distancia utilizada influyen en el resultado.
+
+# .Preparación del entorno de trabajo en R
+
+## .Instalación y carga de paquetes
+
+```{r}
+# Ejecutar una sola vez si los paquetes no están instalados
+# install.packages(c("tidyverse", "cluster", "factoextra", "dbscan", "NbClust"))
+
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(dbscan)
+```
+
+Los paquetes cumplen las siguientes funciones:
+
+- `tidyverse`: manipulación y visualización de datos.
+- `cluster`: algoritmos y medidas para análisis de conglomerados.
+- `factoextra`: visualización de resultados de agrupamiento.
+- `dbscan`: implementación de DBSCAN.
+
+# .Ejemplo aplicado
+
+**agrupamiento de municipios según indicadores de gestión y desarrollo**
+
+## .Planteamiento del problema
+
+Una gobernación desea identificar perfiles de municipios para apoyar la planeación de programas de inversión social. Para ello dispone de indicadores relacionados con:
+
+- Pobreza multidimensional (%).
+- Cobertura educativa (%).
+- Cobertura de acueducto (%).
+- Desempleo (%).
+- Inversión social por habitante (miles de pesos).
+
+El objetivo es identificar municipios con características similares y describir las diferencias entre los grupos.
+
+> Los datos que se construyen a continuación son simulados. No representan indicadores oficiales de municipios reales.
+
+## .Construcción de una base simulada
+
+Se crearán 60 municipios distribuidos inicialmente en tres perfiles ilustrativos. Esta estructura permite practicar las técnicas y visualizar grupos diferenciados.
+
+```{r}
+set.seed(2026)
+
+n_por_grupo <- 20
+
+perfil <- rep(1:3, each = n_por_grupo)
+
+datos_municipios <- tibble(
+  municipio = paste("Municipio", sprintf("%02d", 1:60)),
+  pobreza = case_when(
+    perfil == 1 ~ rnorm(60, 45, 5),
+    perfil == 2 ~ rnorm(60, 25, 4),
+    perfil == 3 ~ rnorm(60, 12, 3)
+  ),
+  cobertura_educativa = case_when(
+    perfil == 1 ~ rnorm(60, 65, 6),
+    perfil == 2 ~ rnorm(60, 78, 5),
+    perfil == 3 ~ rnorm(60, 92, 3)
+  ),
+  cobertura_acueducto = case_when(
+    perfil == 1 ~ rnorm(60, 48, 8),
+    perfil == 2 ~ rnorm(60, 72, 6),
+    perfil == 3 ~ rnorm(60, 94, 3)
+  ),
+  desempleo = case_when(
+    perfil == 1 ~ rnorm(60, 16, 2),
+    perfil == 2 ~ rnorm(60, 11, 2),
+    perfil == 3 ~ rnorm(60, 7, 1.5)
+  ),
+  inversion_social = case_when(
+    perfil == 1 ~ rnorm(60, 450, 55),
+    perfil == 2 ~ rnorm(60, 700, 65),
+    perfil == 3 ~ rnorm(60, 1000, 90)
+  )
+) %>%
+  mutate(
+    across(
+      c(pobreza, cobertura_educativa, cobertura_acueducto, desempleo),
+      ~ pmin(pmax(.x, 0), 100)
+    ),
+    inversion_social = pmax(inversion_social, 50)
+  )
+
+head(datos_municipios)
+```
+
+La variable `perfil` se utilizó solamente para generar los datos y no se incorporó a la base analítica. En una aplicación real, el analista no conocería de antemano los grupos.
+
+## .Exploración inicial
+
+```{r}
+glimpse(datos_municipios)
+summary(datos_municipios)
+
+# Verificar datos faltantes
+colSums(is.na(datos_municipios))
+```
+
+**Visualización de algunas relaciones:**
+
+```{r}
+ggplot(
+  datos_municipios,
+  aes(x = pobreza, y = cobertura_acueducto)
+) +
+  geom_point(size = 2, alpha = 0.75) +
+  labs(
+    title = "Pobreza y cobertura de acueducto",
+    x = "Pobreza multidimensional (%)",
+    y = "Cobertura de acueducto (%)"
+  ) +
+  theme_minimal()
+```
+
+## .Selección de variables y estandarización
+
+Se excluye el nombre del municipio porque es un identificador y no una característica cuantitativa de desarrollo.
+
+```{r}
+variables <- datos_municipios %>%
+  select(
+    pobreza,
+    cobertura_educativa,
+    cobertura_acueducto,
+    desempleo,
+    inversion_social
+  )
+
+# Estandarizar las variables
+datos_escalados <- scale(variables)
+
+head(datos_escalados)
+```
+
+La estandarización evita que la inversión social, medida en miles de pesos, domine las distancias debido a su escala numérica.
+
+# .Aplicación del algoritmo k-means
+
+## .Método del codo
+
+Se calcula el WSS para valores de $K$ entre 1 y 10.
+
+```{r}
+set.seed(123)
+
+fviz_nbclust(
+  datos_escalados,
+  kmeans,
+  method = "wss",
+  k.max = 10,
+  nstart = 25
+) +
+  labs(
+    title = "Método del codo",
+    x = "Número de conglomerados (K)",
+    y = "Suma de cuadrados dentro de los grupos"
+  ) +
+  theme_minimal()
+```
+
+**Interpretación:** se identifica el punto donde agregar otro conglomerado deja de producir una reducción importante del WSS. Este criterio es orientador y no determina por sí solo una solución definitiva.
+
+## .Método de la silueta
+
+```{r}
+set.seed(123)
+
+fviz_nbclust(
+  datos_escalados,
+  kmeans,
+  method = "silhouette",
+  k.max = 10,
+  nstart = 25
+) +
+  labs(
+    title = "Selección de K mediante silueta",
+    x = "Número de conglomerados (K)",
+    y = "Ancho promedio de silueta"
+  ) +
+  theme_minimal()
+```
+
+La solución con mayor silueta promedio puede ofrecer una separación más clara. Sin embargo, conviene contrastarla con el método del codo y con la interpretación sustantiva de los grupos.
+
+## .Entrenamiento del modelo k-means
+
+Para el ejemplo se utilizarán tres conglomerados, como una decisión ilustrativa que deberá contrastarse con los gráficos y métricas anteriores.
+
+```{r}
+set.seed(123)
+
+modelo_kmeans <- kmeans(
+  datos_escalados,
+  centers = 3,
+  nstart = 50,
+  iter.max = 100
+)
+
+modelo_kmeans
+```
+
+Argumentos:
+
+- `centers = 3`: solicita tres conglomerados.
+- `nstart = 50`: realiza 50 inicializaciones aleatorias y conserva la mejor solución según el criterio interno.
+- `iter.max = 100`: establece el máximo de iteraciones por inicialización.
+
+## .Asignación de conglomerados
+
+```{r}
+datos_clasificados <- datos_municipios %>%
+  mutate(
+    conglomerado = factor(modelo_kmeans$cluster)
+  )
+
+head(datos_clasificados)
+```
+
+## .Visualización de los conglomerados
+
+```{r}
+fviz_cluster(
+  modelo_kmeans,
+  data = datos_escalados,
+  geom = "point",
+  ellipse.type = "norm",
+  ggtheme = theme_minimal()
+) +
+  labs(
+    title = "Agrupamiento de municipios mediante k-means",
+    subtitle = "Representación en dos dimensiones"
+  )
+```
+
+La representación utiliza una proyección de los datos para facilitar la visualización. Por tanto, las distancias observadas en el gráfico pueden no reflejar exactamente todas las dimensiones originales.
+
+## .Perfil de los conglomerados
+
+Se calculan los promedios de las variables originales para interpretar los grupos.
+
+```{r}
+perfil_conglomerados <- datos_clasificados %>%
+  group_by(conglomerado) %>%
+  summarise(
+    numero_municipios = n(),
+    pobreza_media = mean(pobreza),
+    cobertura_educativa_media = mean(cobertura_educativa),
+    cobertura_acueducto_media = mean(cobertura_acueducto),
+    desempleo_medio = mean(desempleo),
+    inversion_social_media = mean(inversion_social),
+    .groups = "drop"
+  )
+
+perfil_conglomerados
+```
+
+**Interpretación:** los promedios permiten caracterizar cada grupo. Por ejemplo, un conglomerado podría presentar mayor pobreza, menor cobertura de acueducto y menor inversión social. Esta descripción podría orientar estudios de focalización territorial, pero no debe convertirse automáticamente en una decisión de asignación de recursos sin análisis adicional.
+
+Gráfico de perfiles:
+
+```{r}
+perfil_largo <- datos_clasificados %>%
+  select(conglomerado, pobreza, cobertura_educativa,
+         cobertura_acueducto, desempleo, inversion_social) %>%
+  pivot_longer(
+    cols = -conglomerado,
+    names_to = "indicador",
+    values_to = "valor"
+  ) %>%
+  group_by(conglomerado, indicador) %>%
+  summarise(promedio = mean(valor), .groups = "drop")
+
+ggplot(
+  perfil_largo,
+  aes(x = indicador, y = promedio, group = conglomerado,
+      color = conglomerado)
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Perfil promedio de los conglomerados",
+    x = "Indicador",
+    y = "Promedio en escala original",
+    color = "Conglomerado"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
+
+Como los indicadores tienen unidades distintas, el gráfico facilita la comparación dentro de cada indicador, pero no debe interpretarse comparando directamente la magnitud entre ejes.
+
+# .Agrupamiento jerárquico
+
+## .Calcular la matriz de distancias
+
+Se utilizará la distancia euclidiana sobre las variables estandarizadas.
+
+```{r}
+distancias <- dist(
+  datos_escalados,
+  method = "euclidean"
+)
+```
+
+## .Construir el modelo jerárquico
+
+Se empleará el método de Ward.
+
+```{r}
+modelo_jerarquico <- hclust(
+  distancias,
+  method = "ward.D2"
+)
+
+modelo_jerarquico
+```
+
+## .Construir el dendrograma
+
+```{r}
+plot(
+  modelo_jerarquico,
+  labels = datos_municipios$municipio,
+  main = "Dendrograma de municipios",
+  xlab = "Municipios",
+  ylab = "Distancia de fusión",
+  sub = "",
+  cex = 0.65
+)
+
+rect.hclust(
+  modelo_jerarquico,
+  k = 3,
+  border = 2:4
+)
+```
+
+El dendrograma representa el proceso de unión de los municipios. Las ramas que se fusionan a distancias pequeñas corresponden a observaciones o grupos relativamente similares.
+
+## .Cortar el dendrograma
+
+```{r}
+grupos_jerarquicos <- cutree(
+  modelo_jerarquico,
+  k = 3
+)
+
+datos_jerarquicos <- datos_municipios %>%
+  mutate(
+    conglomerado_jerarquico = factor(grupos_jerarquicos)
+  )
+
+table(datos_jerarquicos$conglomerado_jerarquico)
+```
+
+## .Comparar los métodos
+
+```{r}
+comparacion_metodos <- datos_municipios %>%
+  mutate(
+    kmeans = factor(modelo_kmeans$cluster),
+    jerarquico = factor(grupos_jerarquicos)
+  )
+
+table(
+  Kmeans = comparacion_metodos$kmeans,
+  Jerarquico = comparacion_metodos$jerarquico
+)
+```
+
+Los números de los grupos son etiquetas arbitrarias. Por ejemplo, el conglomerado 1 de k-means no necesariamente corresponde al conglomerado 1 del método jerárquico. La comparación debe centrarse en la composición de los grupos y sus perfiles.
+
+# .Aplicación de DBSCAN
+
+DBSCAN permite identificar grupos según la densidad de las observaciones y detectar puntos que no se ajustan a los grupos encontrados.
+
+## .Ajustar DBSCAN
+
+Los parámetros `eps` y `minPts` deben seleccionarse de acuerdo con la escala de los datos y la estructura de las distancias. El siguiente ajuste es un punto de partida ilustrativo, no una configuración universal.
+
+```{r}
+modelo_dbscan <- dbscan(
+  datos_escalados,
+  eps = 0.8,
+  minPts = 5
+)
+
+modelo_dbscan
+```
+
+## .Identificar grupos y ruido
+
+En el resultado, el grupo 0 representa observaciones clasificadas como ruido.
+
+```{r}
+datos_dbscan <- datos_municipios %>%
+  mutate(
+    conglomerado_dbscan = factor(modelo_dbscan$cluster)
+  )
+
+table(datos_dbscan$conglomerado_dbscan)
+```
+
+## .Visualizar el resultado
+
+```{r}
+fviz_cluster(
+  list(
+    data = as.matrix(datos_escalados),
+    cluster = modelo_dbscan$cluster
+  ),
+  geom = "point",
+  ellipse = FALSE,
+  ggtheme = theme_minimal()
+) +
+  labs(
+    title = "Agrupamiento mediante DBSCAN",
+    subtitle = "El grupo 0 corresponde a observaciones clasificadas como ruido"
+  )
+```
+
+Si la configuración no produce una agrupación útil, se deben explorar otros valores de `eps` y `minPts`, revisar la escala de los datos y analizar la distribución de distancias. No se debe escoger un parámetro solamente porque genera una cantidad de grupos deseada.
+
+# .Evaluación de la calidad de los conglomerados
+
+## .Silueta para k-means
+
+```{r}
+sil_kmeans <- silhouette(
+  modelo_kmeans$cluster,
+  distancias
+)
+
+fviz_silhouette(sil_kmeans)
+```
+
+Promedio de silueta:
+
+```{r}
+mean(sil_kmeans[, "sil_width"])
+```
+
+Una silueta promedio positiva y relativamente alta sugiere que las observaciones están más próximas a su propio grupo que a los grupos vecinos. Valores bajos o negativos pueden indicar solapamiento o asignaciones poco claras.
+
+## .Tamaño de los conglomerados
+
+```{r}
+table(datos_clasificados$conglomerado)
+```
+
+También se puede calcular la proporción de municipios en cada grupo:
+
+```{r}
+datos_clasificados %>%
+  count(conglomerado) %>%
+  mutate(
+    porcentaje = 100 * n / sum(n)
+  )
+```
+
+Un grupo muy pequeño puede ser relevante si representa municipios con características excepcionales, pero también puede reflejar valores atípicos o una solución demasiado fragmentada.
+
+## .Estabilidad y validación externa
+
+La calidad interna no es suficiente. Se recomienda:
+
+- Repetir el análisis con diferentes semillas o muestras.
+- Examinar si los perfiles se mantienen al cambiar algunas variables.
+- Comparar resultados con conocimiento territorial y fuentes administrativas.
+- Evaluar si los grupos son interpretables y útiles para la política pública.
+- Si existen categorías externas confiables, contrastar los grupos sin confundir esa comparación con una validación causal.
+
+# .Consideraciones para la administración pública
+
+El análisis de conglomerados puede apoyar la planeación y la identificación de perfiles territoriales, pero requiere precauciones:
+
+1.  **Calidad de los datos:** indicadores desactualizados o incompletos pueden producir grupos engañosos.
+2.  **Selección de variables:** las variables deben tener justificación técnica y relación con el problema público.
+3.  **Escalas y ponderaciones:** estandarizar no resuelve por sí solo las diferencias conceptuales entre indicadores.
+4.  **Sesgos territoriales:** los grupos pueden reflejar desigualdades históricas o diferencias de medición.
+5.  **Interpretación:** un conglomerado no constituye una categoría oficial ni una explicación causal.
+6.  **Transparencia:** documentar variables, transformaciones, distancias, algoritmos y parámetros.
+7.  **Uso responsable:** no utilizar agrupamientos como único fundamento para negar beneficios, excluir comunidades o tomar decisiones individuales de alto impacto.
+
+# .Actividades para el estudiante
+
+## .Actividad 1.
+
+**Comprensión conceptual**
+
+Responda con sus propias palabras:
+
+1.  ¿Qué es el análisis de conglomerados?
+2.  ¿Cuál es la diferencia entre aprendizaje supervisado y no supervisado?
+3.  ¿Por qué es importante estandarizar las variables antes de aplicar k-means?
+4.  ¿Qué representa el centroide de un conglomerado?
+5.  ¿En qué consiste el método del codo?
+6.  ¿Cómo se interpreta el coeficiente de silueta?
+7.  ¿Qué información proporciona un dendrograma?
+8.  ¿Cuál es la diferencia entre k-means y DBSCAN?
+9.  ¿Por qué los resultados del agrupamiento no deben interpretarse como relaciones causales?
+
+## .Actividad 2.
+
+**Agrupamiento de municipios**
+
+Utilizando la base `datos_municipios`:
+
+1.  Seleccione al menos cuatro indicadores.
+2.  Estandarice las variables.
+3.  Aplique el método del codo para valores de $K$ entre 1 y 10.
+4.  Aplique el método de la silueta.
+5.  Justifique el número de conglomerados seleccionado.
+6.  Entrene un modelo k-means con al menos 30 inicializaciones.
+7.  Identifique los municipios de cada grupo.
+8.  Construya una tabla con los perfiles promedio.
+9.  Interprete las características de cada conglomerado.
+10. Elabore una recomendación para la planeación territorial.
+
+## .Actividad 3.
+
+**Agrupamiento de instituciones educativas**
+
+Una secretaría de educación desea identificar perfiles de instituciones educativas. Construya una base simulada de al menos 100 instituciones con las variables:
+
+| Variable               | Descripción                                       |
+|------------------------------------|------------------------------------|
+| `estudiantes`          | Número de estudiantes matriculados                |
+| `docentes`             | Número de docentes                                |
+| `desercion`            | Tasa de deserción (%)                             |
+| `cobertura_internet`   | Porcentaje de estudiantes con acceso a internet   |
+| `resultados_saber`     | Puntaje promedio en una prueba estandarizada      |
+| `inversion_estudiante` | Inversión anual por estudiante, en miles de pesos |
+
+Desarrolle las siguientes tareas:
+
+1.  Genere los datos con `set.seed()`.
+2.  Realice un análisis exploratorio.
+3.  Revise valores faltantes y valores atípicos.
+4.  Estandarice las variables pertinentes.
+5.  Aplique k-means y determine un número razonable de conglomerados.
+6.  Aplique agrupamiento jerárquico con el método `ward.D2`.
+7.  Compare los resultados de ambos métodos.
+8.  Caracterice los grupos mediante tablas y gráficos.
+9.  Proponga acciones diferenciadas de apoyo institucional.
+10. Explique las limitaciones del análisis.
+
+## .Actividad 4.
+
+**Comparación de técnicas**
+
+Utilice una misma base de datos y compare k-means, agrupamiento jerárquico y DBSCAN.
+
+1.  ¿Cuántos grupos identifica cada método?
+2.  ¿Qué observaciones quedan clasificadas como ruido en DBSCAN?
+3.  ¿Cuál es el promedio de silueta de la solución k-means?
+4.  ¿Qué método genera grupos más fáciles de interpretar?
+5.  ¿Los resultados son estables al modificar los parámetros?
+6.  ¿Cuál técnica recomendaría para el problema estudiado? Justifique.
+
+## .Actividad 5.
+
+**Reflexión sobre política pública**
+
+Una gobernación agrupa municipios con indicadores de pobreza, cobertura educativa y acceso a servicios públicos. Decide asignar recursos únicamente a los municipios del conglomerado con mayor pobreza promedio.
+
+Analice críticamente esta decisión:
+
+1.  ¿Qué ventajas puede ofrecer el agrupamiento?
+2.  ¿Qué limitaciones presenta utilizar el promedio del grupo para asignar recursos?
+3.  ¿Podrían existir municipios con necesidades particulares dentro de otros conglomerados?
+4.  ¿Qué otros criterios deberían considerarse para asignar recursos públicos?
+5.  ¿Cómo garantizaría transparencia y equidad en la decisión?
+
+# .Reto de aplicación
+
+Seleccione una problemática de administración pública que pueda estudiarse mediante técnicas de agrupamiento. Algunas posibilidades son:
+
+- Clasificación exploratoria de municipios según indicadores de desarrollo.
+- Agrupamiento de instituciones educativas según cobertura y resultados.
+- Identificación de perfiles de centros de salud según capacidad y demanda.
+- Segmentación de dependencias según eficiencia operativa.
+- Agrupamiento de barrios según acceso a servicios públicos.
+
+Elabore un informe que contenga:
+
+1.  Descripción del problema y objetivo del análisis.
+2.  Unidad de análisis y descripción de las variables.
+3.  Justificación de la selección de variables.
+4.  Exploración y preparación de los datos.
+5.  Estandarización y medida de distancia.
+6.  Aplicación de por lo menos dos técnicas de agrupamiento.
+7.  Criterios utilizados para seleccionar la solución.
+8.  Caracterización e interpretación de los grupos.
+9.  Recomendaciones para la gestión pública.
+10. Limitaciones y consideraciones éticas.
+
+# .Conclusiones
+
+El análisis de conglomerados permite descubrir patrones y construir perfiles de unidades territoriales, instituciones o usuarios a partir de sus características. K-means es útil para formar grupos alrededor de centroides; el agrupamiento jerárquico permite explorar relaciones mediante dendrogramas; y DBSCAN identifica agrupaciones basadas en densidad y observaciones aisladas.
+
+La calidad de los resultados depende de la selección de variables, la preparación de los datos, la escala de medición, la distancia y los parámetros del algoritmo. Por ello, es conveniente combinar criterios estadísticos con conocimiento del contexto institucional.
+
+En la administración pública, los conglomerados pueden apoyar diagnósticos y estrategias diferenciadas, pero no reemplazan el análisis social, territorial ni la deliberación pública. Sus resultados deben ser transparentes, verificables y utilizados con criterios de equidad.
+
+# .Referencias y recursos
+
+- Kaufman, L., & Rousseeuw, P. J. (1990). *Finding Groups in Data: An Introduction to Cluster Analysis*. Wiley.
+- MacQueen, J. (1967). Some methods for classification and analysis of multivariate observations. *Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability*, 1, 281–297.
+- Ester, M., Kriegel, H.-P., Sander, J., & Xu, X. (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. *Proceedings of the Second International Conference on Knowledge Discovery and Data Mining*, 226–231.
+- Documentación de `stats::kmeans()`: https://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html
+- Documentación de `cluster`: https://cran.r-project.org/package=cluster
+- Documentación de `factoextra`: https://cran.r-project.org/package=factoextra
+- Documentación de `dbscan`: https://cran.r-project.org/package=dbscan
