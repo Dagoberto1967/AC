@@ -40,10 +40,9 @@ knitr:
     out.width: "70%"
 ---
 
-
 ```{=html}
 <div style="position:absolute; top:10px; right:10px;">
-<img src="Logo_ut.png" width="150">
+<img src="Logo_Esap.png" width="150">
 </div>
 ```
 
@@ -77,7 +76,6 @@ packages <- c("tidyverse","kableExtra","psych","readxl")
 
 ipak(packages)
 ```
-
 
 # .Presentación
 
@@ -118,7 +116,7 @@ El algoritmo no conoce previamente cuáles municipios deben pertenecer a cada gr
 ## .Aprendizaje supervisado y no supervisado
 
 | Característica | Supervisado | No supervisado |
-|---|---|---|
+|------------------------|------------------------|------------------------|
 | Variable respuesta | Conocida | No se requiere |
 | Objetivo | Predecir o explicar una respuesta | Descubrir patrones o estructuras |
 | Ejemplos | Regresión y clasificación | Conglomerados y reducción de dimensión |
@@ -231,11 +229,11 @@ Donde:
 
 **Etapas del algoritmo**
 
-1. Definir el número de conglomerados $K$.
-2. Seleccionar centros iniciales.
-3. Asignar cada observación al centroide más cercano.
-4. Calcular nuevamente los centroides.
-5. Repetir la asignación y actualización hasta alcanzar un criterio de convergencia.
+1.  Definir el número de conglomerados $K$.
+2.  Seleccionar centros iniciales.
+3.  Asignar cada observación al centroide más cercano.
+4.  Calcular nuevamente los centroides.
+5.  Repetir la asignación y actualización hasta alcanzar un criterio de convergencia.
 
 **Ventajas**
 
@@ -290,16 +288,16 @@ El agrupamiento jerárquico construye una estructura de grupos anidados que pued
 
 En el enfoque aglomerativo:
 
-1. Cada observación comienza como un conglomerado individual.
-2. Se identifican los dos conglomerados más cercanos.
-3. Se fusionan en un nuevo conglomerado.
-4. Se actualizan las distancias entre grupos.
-5. Se repite el proceso hasta que todas las observaciones formen un solo grupo.
+1.  Cada observación comienza como un conglomerado individual.
+2.  Se identifican los dos conglomerados más cercanos.
+3.  Se fusionan en un nuevo conglomerado.
+4.  Se actualizan las distancias entre grupos.
+5.  Se repite el proceso hasta que todas las observaciones formen un solo grupo.
 
 **Métodos de enlace**
 
 | Método | Característica |
-|---|---|
+|------------------------------------|------------------------------------|
 | `single` | Distancia mínima entre observaciones de dos grupos |
 | `complete` | Distancia máxima entre observaciones de dos grupos |
 | `average` | Promedio de las distancias entre observaciones de dos grupos |
@@ -817,91 +815,91 @@ La calidad interna no es suficiente. Se recomienda:
 
 El análisis de conglomerados puede apoyar la planeación y la identificación de perfiles territoriales, pero requiere precauciones:
 
-1. **Calidad de los datos:** indicadores desactualizados o incompletos pueden producir grupos engañosos.
-2. **Selección de variables:** las variables deben tener justificación técnica y relación con el problema público.
-3. **Escalas y ponderaciones:** estandarizar no resuelve por sí solo las diferencias conceptuales entre indicadores.
-4. **Sesgos territoriales:** los grupos pueden reflejar desigualdades históricas o diferencias de medición.
-5. **Interpretación:** un conglomerado no constituye una categoría oficial ni una explicación causal.
-6. **Transparencia:** documentar variables, transformaciones, distancias, algoritmos y parámetros.
-7. **Uso responsable:** no utilizar agrupamientos como único fundamento para negar beneficios, excluir comunidades o tomar decisiones individuales de alto impacto.
+1.  **Calidad de los datos:** indicadores desactualizados o incompletos pueden producir grupos engañosos.
+2.  **Selección de variables:** las variables deben tener justificación técnica y relación con el problema público.
+3.  **Escalas y ponderaciones:** estandarizar no resuelve por sí solo las diferencias conceptuales entre indicadores.
+4.  **Sesgos territoriales:** los grupos pueden reflejar desigualdades históricas o diferencias de medición.
+5.  **Interpretación:** un conglomerado no constituye una categoría oficial ni una explicación causal.
+6.  **Transparencia:** documentar variables, transformaciones, distancias, algoritmos y parámetros.
+7.  **Uso responsable:** no utilizar agrupamientos como único fundamento para negar beneficios, excluir comunidades o tomar decisiones individuales de alto impacto.
 
 # .Actividades para el estudiante
 
-## .Actividad 1. 
+## .Actividad 1.
 
 **Comprensión conceptual**
 
 Responda con sus propias palabras:
 
-1. ¿Qué es el análisis de conglomerados?
-2. ¿Cuál es la diferencia entre aprendizaje supervisado y no supervisado?
-3. ¿Por qué es importante estandarizar las variables antes de aplicar k-means?
-4. ¿Qué representa el centroide de un conglomerado?
-5. ¿En qué consiste el método del codo?
-6. ¿Cómo se interpreta el coeficiente de silueta?
-7. ¿Qué información proporciona un dendrograma?
-8. ¿Cuál es la diferencia entre k-means y DBSCAN?
-9. ¿Por qué los resultados del agrupamiento no deben interpretarse como relaciones causales?
+1.  ¿Qué es el análisis de conglomerados?
+2.  ¿Cuál es la diferencia entre aprendizaje supervisado y no supervisado?
+3.  ¿Por qué es importante estandarizar las variables antes de aplicar k-means?
+4.  ¿Qué representa el centroide de un conglomerado?
+5.  ¿En qué consiste el método del codo?
+6.  ¿Cómo se interpreta el coeficiente de silueta?
+7.  ¿Qué información proporciona un dendrograma?
+8.  ¿Cuál es la diferencia entre k-means y DBSCAN?
+9.  ¿Por qué los resultados del agrupamiento no deben interpretarse como relaciones causales?
 
-## .Actividad 2. 
+## .Actividad 2.
 
 **Agrupamiento de municipios**
 
 Utilizando la base `datos_municipios`:
 
-1. Seleccione al menos cuatro indicadores.
-2. Estandarice las variables.
-3. Aplique el método del codo para valores de $K$ entre 1 y 10.
-4. Aplique el método de la silueta.
-5. Justifique el número de conglomerados seleccionado.
-6. Entrene un modelo k-means con al menos 30 inicializaciones.
-7. Identifique los municipios de cada grupo.
-8. Construya una tabla con los perfiles promedio.
-9. Interprete las características de cada conglomerado.
+1.  Seleccione al menos cuatro indicadores.
+2.  Estandarice las variables.
+3.  Aplique el método del codo para valores de $K$ entre 1 y 10.
+4.  Aplique el método de la silueta.
+5.  Justifique el número de conglomerados seleccionado.
+6.  Entrene un modelo k-means con al menos 30 inicializaciones.
+7.  Identifique los municipios de cada grupo.
+8.  Construya una tabla con los perfiles promedio.
+9.  Interprete las características de cada conglomerado.
 10. Elabore una recomendación para la planeación territorial.
 
-## .Actividad 3. 
+## .Actividad 3.
 
 **Agrupamiento de instituciones educativas**
 
 Una secretaría de educación desea identificar perfiles de instituciones educativas. Construya una base simulada de al menos 100 instituciones con las variables:
 
-| Variable | Descripción |
-|---|---|
-| `estudiantes` | Número de estudiantes matriculados |
-| `docentes` | Número de docentes |
-| `desercion` | Tasa de deserción (%) |
-| `cobertura_internet` | Porcentaje de estudiantes con acceso a internet |
-| `resultados_saber` | Puntaje promedio en una prueba estandarizada |
+| Variable               | Descripción                                       |
+|------------------------------------|------------------------------------|
+| `estudiantes`          | Número de estudiantes matriculados                |
+| `docentes`             | Número de docentes                                |
+| `desercion`            | Tasa de deserción (%)                             |
+| `cobertura_internet`   | Porcentaje de estudiantes con acceso a internet   |
+| `resultados_saber`     | Puntaje promedio en una prueba estandarizada      |
 | `inversion_estudiante` | Inversión anual por estudiante, en miles de pesos |
 
 Desarrolle las siguientes tareas:
 
-1. Genere los datos con `set.seed()`.
-2. Realice un análisis exploratorio.
-3. Revise valores faltantes y valores atípicos.
-4. Estandarice las variables pertinentes.
-5. Aplique k-means y determine un número razonable de conglomerados.
-6. Aplique agrupamiento jerárquico con el método `ward.D2`.
-7. Compare los resultados de ambos métodos.
-8. Caracterice los grupos mediante tablas y gráficos.
-9. Proponga acciones diferenciadas de apoyo institucional.
+1.  Genere los datos con `set.seed()`.
+2.  Realice un análisis exploratorio.
+3.  Revise valores faltantes y valores atípicos.
+4.  Estandarice las variables pertinentes.
+5.  Aplique k-means y determine un número razonable de conglomerados.
+6.  Aplique agrupamiento jerárquico con el método `ward.D2`.
+7.  Compare los resultados de ambos métodos.
+8.  Caracterice los grupos mediante tablas y gráficos.
+9.  Proponga acciones diferenciadas de apoyo institucional.
 10. Explique las limitaciones del análisis.
 
-## .Actividad 4. 
+## .Actividad 4.
 
 **Comparación de técnicas**
 
 Utilice una misma base de datos y compare k-means, agrupamiento jerárquico y DBSCAN.
 
-1. ¿Cuántos grupos identifica cada método?
-2. ¿Qué observaciones quedan clasificadas como ruido en DBSCAN?
-3. ¿Cuál es el promedio de silueta de la solución k-means?
-4. ¿Qué método genera grupos más fáciles de interpretar?
-5. ¿Los resultados son estables al modificar los parámetros?
-6. ¿Cuál técnica recomendaría para el problema estudiado? Justifique.
+1.  ¿Cuántos grupos identifica cada método?
+2.  ¿Qué observaciones quedan clasificadas como ruido en DBSCAN?
+3.  ¿Cuál es el promedio de silueta de la solución k-means?
+4.  ¿Qué método genera grupos más fáciles de interpretar?
+5.  ¿Los resultados son estables al modificar los parámetros?
+6.  ¿Cuál técnica recomendaría para el problema estudiado? Justifique.
 
-## .Actividad 5. 
+## .Actividad 5.
 
 **Reflexión sobre política pública**
 
@@ -909,11 +907,11 @@ Una gobernación agrupa municipios con indicadores de pobreza, cobertura educati
 
 Analice críticamente esta decisión:
 
-1. ¿Qué ventajas puede ofrecer el agrupamiento?
-2. ¿Qué limitaciones presenta utilizar el promedio del grupo para asignar recursos?
-3. ¿Podrían existir municipios con necesidades particulares dentro de otros conglomerados?
-4. ¿Qué otros criterios deberían considerarse para asignar recursos públicos?
-5. ¿Cómo garantizaría transparencia y equidad en la decisión?
+1.  ¿Qué ventajas puede ofrecer el agrupamiento?
+2.  ¿Qué limitaciones presenta utilizar el promedio del grupo para asignar recursos?
+3.  ¿Podrían existir municipios con necesidades particulares dentro de otros conglomerados?
+4.  ¿Qué otros criterios deberían considerarse para asignar recursos públicos?
+5.  ¿Cómo garantizaría transparencia y equidad en la decisión?
 
 # .Reto de aplicación
 
@@ -927,15 +925,15 @@ Seleccione una problemática de administración pública que pueda estudiarse me
 
 Elabore un informe que contenga:
 
-1. Descripción del problema y objetivo del análisis.
-2. Unidad de análisis y descripción de las variables.
-3. Justificación de la selección de variables.
-4. Exploración y preparación de los datos.
-5. Estandarización y medida de distancia.
-6. Aplicación de por lo menos dos técnicas de agrupamiento.
-7. Criterios utilizados para seleccionar la solución.
-8. Caracterización e interpretación de los grupos.
-9. Recomendaciones para la gestión pública.
+1.  Descripción del problema y objetivo del análisis.
+2.  Unidad de análisis y descripción de las variables.
+3.  Justificación de la selección de variables.
+4.  Exploración y preparación de los datos.
+5.  Estandarización y medida de distancia.
+6.  Aplicación de por lo menos dos técnicas de agrupamiento.
+7.  Criterios utilizados para seleccionar la solución.
+8.  Caracterización e interpretación de los grupos.
+9.  Recomendaciones para la gestión pública.
 10. Limitaciones y consideraciones éticas.
 
 # .Conclusiones
