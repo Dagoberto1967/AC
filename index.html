@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dagoberto Salgado Horta">
+
+<title>Análisis de conglomerados y técnicas de agrupamiento</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<style>html{ scroll-behavior: smooth; }</style>
+<style>
+
+      .quarto-title-block .quarto-title-banner {
+        background: #98b6ed;
+      }
+</style>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-page-left">
+      <h1 class="title">Análisis de conglomerados y técnicas de agrupamiento</h1>
+            <p class="subtitle lead">Aprendizaje no supervisado aplicado a la administración pública con R</p>
+                      </div>
+  </div>
+    
+  <div class="quarto-title-meta-author column-page-left">
+    <div class="quarto-title-meta-heading">Autor/a</div>
+    <div class="quarto-title-meta-heading">Afiliación</div>
+    
+      <div class="quarto-title-meta-contents">
+      <p class="author">Dagoberto Salgado Horta </p>
+    </div>
+    <div class="quarto-title-meta-contents">
+          <p class="affiliation">
+              <a href="https://www.esap.edu.co/">
+              Escuela Superior de Administración Pública
+              </a>
+            </p>
+        </div>
+    </div>
+
+  <div class="quarto-title-meta column-page-left">
+
+        
+      <div>
+      <div class="quarto-title-meta-heading">Fecha de publicación</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">23 de noviembre de 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="page-columns page-rows-contents page-layout-full">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Tabla de contenidos</h2>
+   
+  <ul>
+  <li><a href="#cargar-paquetes" id="toc-cargar-paquetes" class="nav-link active" data-scroll-target="#cargar-paquetes"><span class="header-section-number">1</span> .Cargar paquetes</a></li>
+  <li><a href="#presentación" id="toc-presentación" class="nav-link" data-scroll-target="#presentación"><span class="header-section-number">2</span> .Presentación</a>
+  <ul class="collapse">
+  <li><a href="#resultados-de-aprendizaje" id="toc-resultados-de-aprendizaje" class="nav-link" data-scroll-target="#resultados-de-aprendizaje"><span class="header-section-number">2.1</span> .Resultados de aprendizaje</a></li>
+  </ul></li>
+  <li><a href="#fundamentos-del-análisis-de-conglomerados" id="toc-fundamentos-del-análisis-de-conglomerados" class="nav-link" data-scroll-target="#fundamentos-del-análisis-de-conglomerados"><span class="header-section-number">3</span> .Fundamentos del análisis de conglomerados</a>
+  <ul class="collapse">
+  <li><a href="#qué-es-el-análisis-de-conglomerados" id="toc-qué-es-el-análisis-de-conglomerados" class="nav-link" data-scroll-target="#qué-es-el-análisis-de-conglomerados"><span class="header-section-number">3.1</span> .¿Qué es el análisis de conglomerados?</a></li>
+  <li><a href="#aprendizaje-supervisado-y-no-supervisado" id="toc-aprendizaje-supervisado-y-no-supervisado" class="nav-link" data-scroll-target="#aprendizaje-supervisado-y-no-supervisado"><span class="header-section-number">3.2</span> .Aprendizaje supervisado y no supervisado</a></li>
+  <li><a href="#aplicaciones-en-la-administración-pública" id="toc-aplicaciones-en-la-administración-pública" class="nav-link" data-scroll-target="#aplicaciones-en-la-administración-pública"><span class="header-section-number">3.3</span> .Aplicaciones en la administración pública</a></li>
+  </ul></li>
+  <li><a href="#elementos-fundamentales" id="toc-elementos-fundamentales" class="nav-link" data-scroll-target="#elementos-fundamentales"><span class="header-section-number">4</span> .Elementos fundamentales</a>
+  <ul class="collapse">
+  <li><a href="#observaciones-y-variables" id="toc-observaciones-y-variables" class="nav-link" data-scroll-target="#observaciones-y-variables"><span class="header-section-number">4.1</span> .Observaciones y variables</a></li>
+  <li><a href="#medidas-de-distancia" id="toc-medidas-de-distancia" class="nav-link" data-scroll-target="#medidas-de-distancia"><span class="header-section-number">4.2</span> .Medidas de distancia</a></li>
+  <li><a href="#por-qué-estandarizar-las-variables" id="toc-por-qué-estandarizar-las-variables" class="nav-link" data-scroll-target="#por-qué-estandarizar-las-variables"><span class="header-section-number">4.3</span> .¿Por qué estandarizar las variables?</a></li>
+  </ul></li>
+  <li><a href="#técnicas-de-agrupamiento" id="toc-técnicas-de-agrupamiento" class="nav-link" data-scroll-target="#técnicas-de-agrupamiento"><span class="header-section-number">5</span> .Técnicas de agrupamiento</a>
+  <ul class="collapse">
+  <li><a href="#algoritmo-k-means" id="toc-algoritmo-k-means" class="nav-link" data-scroll-target="#algoritmo-k-means"><span class="header-section-number">5.1</span> .Algoritmo k-means</a></li>
+  <li><a href="#selección-del-número-de-conglomerados" id="toc-selección-del-número-de-conglomerados" class="nav-link" data-scroll-target="#selección-del-número-de-conglomerados"><span class="header-section-number">5.2</span> .Selección del número de conglomerados</a></li>
+  <li><a href="#agrupamiento-jerárquico" id="toc-agrupamiento-jerárquico" class="nav-link" data-scroll-target="#agrupamiento-jerárquico"><span class="header-section-number">5.3</span> .Agrupamiento jerárquico</a></li>
+  <li><a href="#dbscan" id="toc-dbscan" class="nav-link" data-scroll-target="#dbscan"><span class="header-section-number">5.4</span> .DBSCAN</a></li>
+  </ul></li>
+  <li><a href="#preparación-del-entorno-de-trabajo-en-r" id="toc-preparación-del-entorno-de-trabajo-en-r" class="nav-link" data-scroll-target="#preparación-del-entorno-de-trabajo-en-r"><span class="header-section-number">6</span> .Preparación del entorno de trabajo en R</a>
+  <ul class="collapse">
+  <li><a href="#instalación-y-carga-de-paquetes" id="toc-instalación-y-carga-de-paquetes" class="nav-link" data-scroll-target="#instalación-y-carga-de-paquetes"><span class="header-section-number">6.1</span> .Instalación y carga de paquetes</a></li>
+  </ul></li>
+  <li><a href="#ejemplo-aplicado" id="toc-ejemplo-aplicado" class="nav-link" data-scroll-target="#ejemplo-aplicado"><span class="header-section-number">7</span> .Ejemplo aplicado</a>
+  <ul class="collapse">
+  <li><a href="#planteamiento-del-problema" id="toc-planteamiento-del-problema" class="nav-link" data-scroll-target="#planteamiento-del-problema"><span class="header-section-number">7.1</span> .Planteamiento del problema</a></li>
+  <li><a href="#construcción-de-una-base-simulada" id="toc-construcción-de-una-base-simulada" class="nav-link" data-scroll-target="#construcción-de-una-base-simulada"><span class="header-section-number">7.2</span> .Construcción de una base simulada</a></li>
+  <li><a href="#exploración-inicial" id="toc-exploración-inicial" class="nav-link" data-scroll-target="#exploración-inicial"><span class="header-section-number">7.3</span> .Exploración inicial</a></li>
+  <li><a href="#selección-de-variables-y-estandarización" id="toc-selección-de-variables-y-estandarización" class="nav-link" data-scroll-target="#selección-de-variables-y-estandarización"><span class="header-section-number">7.4</span> .Selección de variables y estandarización</a></li>
+  </ul></li>
+  <li><a href="#aplicación-del-algoritmo-k-means" id="toc-aplicación-del-algoritmo-k-means" class="nav-link" data-scroll-target="#aplicación-del-algoritmo-k-means"><span class="header-section-number">8</span> .Aplicación del algoritmo k-means</a>
+  <ul class="collapse">
+  <li><a href="#método-del-codo" id="toc-método-del-codo" class="nav-link" data-scroll-target="#método-del-codo"><span class="header-section-number">8.1</span> .Método del codo</a></li>
+  <li><a href="#método-de-la-silueta" id="toc-método-de-la-silueta" class="nav-link" data-scroll-target="#método-de-la-silueta"><span class="header-section-number">8.2</span> .Método de la silueta</a></li>
+  <li><a href="#entrenamiento-del-modelo-k-means" id="toc-entrenamiento-del-modelo-k-means" class="nav-link" data-scroll-target="#entrenamiento-del-modelo-k-means"><span class="header-section-number">8.3</span> .Entrenamiento del modelo k-means</a></li>
+  <li><a href="#asignación-de-conglomerados" id="toc-asignación-de-conglomerados" class="nav-link" data-scroll-target="#asignación-de-conglomerados"><span class="header-section-number">8.4</span> .Asignación de conglomerados</a></li>
+  <li><a href="#visualización-de-los-conglomerados" id="toc-visualización-de-los-conglomerados" class="nav-link" data-scroll-target="#visualización-de-los-conglomerados"><span class="header-section-number">8.5</span> .Visualización de los conglomerados</a></li>
+  <li><a href="#perfil-de-los-conglomerados" id="toc-perfil-de-los-conglomerados" class="nav-link" data-scroll-target="#perfil-de-los-conglomerados"><span class="header-section-number">8.6</span> .Perfil de los conglomerados</a></li>
+  </ul></li>
+  <li><a href="#agrupamiento-jerárquico-1" id="toc-agrupamiento-jerárquico-1" class="nav-link" data-scroll-target="#agrupamiento-jerárquico-1"><span class="header-section-number">9</span> .Agrupamiento jerárquico</a>
+  <ul class="collapse">
+  <li><a href="#calcular-la-matriz-de-distancias" id="toc-calcular-la-matriz-de-distancias" class="nav-link" data-scroll-target="#calcular-la-matriz-de-distancias"><span class="header-section-number">9.1</span> .Calcular la matriz de distancias</a></li>
+  <li><a href="#construir-el-modelo-jerárquico" id="toc-construir-el-modelo-jerárquico" class="nav-link" data-scroll-target="#construir-el-modelo-jerárquico"><span class="header-section-number">9.2</span> .Construir el modelo jerárquico</a></li>
+  <li><a href="#construir-el-dendrograma" id="toc-construir-el-dendrograma" class="nav-link" data-scroll-target="#construir-el-dendrograma"><span class="header-section-number">9.3</span> .Construir el dendrograma</a></li>
+  <li><a href="#cortar-el-dendrograma" id="toc-cortar-el-dendrograma" class="nav-link" data-scroll-target="#cortar-el-dendrograma"><span class="header-section-number">9.4</span> .Cortar el dendrograma</a></li>
+  <li><a href="#comparar-los-métodos" id="toc-comparar-los-métodos" class="nav-link" data-scroll-target="#comparar-los-métodos"><span class="header-section-number">9.5</span> .Comparar los métodos</a></li>
+  </ul></li>
+  <li><a href="#aplicación-de-dbscan" id="toc-aplicación-de-dbscan" class="nav-link" data-scroll-target="#aplicación-de-dbscan"><span class="header-section-number">10</span> .Aplicación de DBSCAN</a>
+  <ul class="collapse">
+  <li><a href="#ajustar-dbscan" id="toc-ajustar-dbscan" class="nav-link" data-scroll-target="#ajustar-dbscan"><span class="header-section-number">10.1</span> .Ajustar DBSCAN</a></li>
+  <li><a href="#identificar-grupos-y-ruido" id="toc-identificar-grupos-y-ruido" class="nav-link" data-scroll-target="#identificar-grupos-y-ruido"><span class="header-section-number">10.2</span> .Identificar grupos y ruido</a></li>
+  <li><a href="#visualizar-el-resultado" id="toc-visualizar-el-resultado" class="nav-link" data-scroll-target="#visualizar-el-resultado"><span class="header-section-number">10.3</span> .Visualizar el resultado</a></li>
+  </ul></li>
+  <li><a href="#evaluación-de-la-calidad-de-los-conglomerados" id="toc-evaluación-de-la-calidad-de-los-conglomerados" class="nav-link" data-scroll-target="#evaluación-de-la-calidad-de-los-conglomerados"><span class="header-section-number">11</span> .Evaluación de la calidad de los conglomerados</a>
+  <ul class="collapse">
+  <li><a href="#silueta-para-k-means" id="toc-silueta-para-k-means" class="nav-link" data-scroll-target="#silueta-para-k-means"><span class="header-section-number">11.1</span> .Silueta para k-means</a></li>
+  <li><a href="#tamaño-de-los-conglomerados" id="toc-tamaño-de-los-conglomerados" class="nav-link" data-scroll-target="#tamaño-de-los-conglomerados"><span class="header-section-number">11.2</span> .Tamaño de los conglomerados</a></li>
+  <li><a href="#estabilidad-y-validación-externa" id="toc-estabilidad-y-validación-externa" class="nav-link" data-scroll-target="#estabilidad-y-validación-externa"><span class="header-section-number">11.3</span> .Estabilidad y validación externa</a></li>
+  </ul></li>
+  <li><a href="#consideraciones-para-la-administración-pública" id="toc-consideraciones-para-la-administración-pública" class="nav-link" data-scroll-target="#consideraciones-para-la-administración-pública"><span class="header-section-number">12</span> .Consideraciones para la administración pública</a></li>
+  <li><a href="#actividades-para-el-estudiante" id="toc-actividades-para-el-estudiante" class="nav-link" data-scroll-target="#actividades-para-el-estudiante"><span class="header-section-number">13</span> .Actividades para el estudiante</a>
+  <ul class="collapse">
+  <li><a href="#actividad-1." id="toc-actividad-1." class="nav-link" data-scroll-target="#actividad-1."><span class="header-section-number">13.1</span> .Actividad 1.</a></li>
+  <li><a href="#actividad-2." id="toc-actividad-2." class="nav-link" data-scroll-target="#actividad-2."><span class="header-section-number">13.2</span> .Actividad 2.</a></li>
+  <li><a href="#actividad-3." id="toc-actividad-3." class="nav-link" data-scroll-target="#actividad-3."><span class="header-section-number">13.3</span> .Actividad 3.</a></li>
+  <li><a href="#actividad-4." id="toc-actividad-4." class="nav-link" data-scroll-target="#actividad-4."><span class="header-section-number">13.4</span> .Actividad 4.</a></li>
+  <li><a href="#actividad-5." id="toc-actividad-5." class="nav-link" data-scroll-target="#actividad-5."><span class="header-section-number">13.5</span> .Actividad 5.</a></li>
+  </ul></li>
+  <li><a href="#reto-de-aplicación" id="toc-reto-de-aplicación" class="nav-link" data-scroll-target="#reto-de-aplicación"><span class="header-section-number">14</span> .Reto de aplicación</a></li>
+  <li><a href="#conclusiones" id="toc-conclusiones" class="nav-link" data-scroll-target="#conclusiones"><span class="header-section-number">15</span> .Conclusiones</a></li>
+  <li><a href="#referencias-y-recursos" id="toc-referencias-y-recursos" class="nav-link" data-scroll-target="#referencias-y-recursos"><span class="header-section-number">16</span> .Referencias y recursos</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+
+
+
+
+
+<div style="position:absolute; top:10px; right:10px;">
+<img src="Logo_ut.png" width="150">
+</div>
+<style>
+body{
+  background-color:#f7f6ed;
+  font-size:130%;
+  text-align:justify;
+}
+</style>
+<section id="cargar-paquetes" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> .Cargar paquetes</h1>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ipak <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg){</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">options</span>(<span class="at">repos =</span> <span class="fu">c</span>(<span class="at">CRAN=</span><span class="st">"https://cloud.r-project.org"</span>))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  new.pkg <span class="ot">&lt;-</span> pkg[<span class="sc">!</span>(pkg <span class="sc">%in%</span> <span class="fu">rownames</span>(<span class="fu">installed.packages</span>()))]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(new.pkg)) <span class="fu">install.packages</span>(new.pkg, <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="fu">lapply</span>(pkg, <span class="cf">function</span>(p)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(p, <span class="at">character.only =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>packages <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"tidyverse"</span>,<span class="st">"kableExtra"</span>,<span class="st">"psych"</span>,<span class="st">"readxl"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ipak</span>(packages)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="presentación" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> .Presentación</h1>
+<p>Las entidades públicas recopilan información sobre municipios, barrios, usuarios, instituciones educativas, centros de salud y programas sociales. En muchas situaciones no existen categorías previamente definidas que permitan clasificar estas unidades. El análisis de conglomerados, también conocido como <em>clustering</em> o agrupamiento, permite identificar grupos de observaciones que presentan características similares.</p>
+<p>A diferencia de los modelos supervisados, las técnicas de agrupamiento no necesitan una variable respuesta conocida. Su propósito es descubrir estructuras o patrones presentes en los datos. Por esta razón, hacen parte del <strong>aprendizaje no supervisado</strong>.</p>
+<p>En este módulo se presentan los fundamentos del análisis de conglomerados y se desarrollan ejemplos en R utilizando técnicas como k-means, agrupamiento jerárquico y DBSCAN. Las aplicaciones se contextualizan en problemas de gestión pública.</p>
+<section id="resultados-de-aprendizaje" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="resultados-de-aprendizaje"><span class="header-section-number">2.1</span> .Resultados de aprendizaje</h2>
+<p>Al finalizar el módulo, el estudiante estará en capacidad de:</p>
+<ul>
+<li>Explicar el concepto de aprendizaje no supervisado y análisis de conglomerados.</li>
+<li>Reconocer la importancia de la preparación y estandarización de los datos.</li>
+<li>Calcular e interpretar medidas de distancia o disimilitud.</li>
+<li>Aplicar el algoritmo k-means y seleccionar un número razonable de grupos.</li>
+<li>Construir e interpretar dendrogramas mediante agrupamiento jerárquico.</li>
+<li>Reconocer las características del algoritmo DBSCAN.</li>
+<li>Evaluar la calidad y utilidad de una solución de agrupamiento.</li>
+<li>Interpretar los grupos identificados en situaciones de administración pública.</li>
+</ul>
+</section>
+</section>
+<section id="fundamentos-del-análisis-de-conglomerados" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> .Fundamentos del análisis de conglomerados</h1>
+<section id="qué-es-el-análisis-de-conglomerados" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="qué-es-el-análisis-de-conglomerados"><span class="header-section-number">3.1</span> .¿Qué es el análisis de conglomerados?</h2>
+<p>El análisis de conglomerados es un conjunto de técnicas estadísticas y computacionales cuyo objetivo es dividir un conjunto de observaciones en grupos, de manera que:</p>
+<ul>
+<li>Las observaciones pertenecientes a un mismo grupo sean relativamente similares.</li>
+<li>Las observaciones de grupos diferentes sean relativamente distintas.</li>
+</ul>
+<p>Cada grupo recibe el nombre de conglomerado, clúster o segmento.</p>
+<p>Por ejemplo, una gobernación puede disponer de indicadores socioeconómicos de 47 municipios y buscar agrupaciones de municipios con condiciones similares de pobreza, cobertura educativa, acceso a servicios públicos y empleo. Los resultados podrían contribuir a identificar necesidades territoriales diferenciadas.</p>
+<p>El algoritmo no conoce previamente cuáles municipios deben pertenecer a cada grupo: la estructura se descubre a partir de los datos y de las decisiones metodológicas del analista.</p>
+</section>
+<section id="aprendizaje-supervisado-y-no-supervisado" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="aprendizaje-supervisado-y-no-supervisado"><span class="header-section-number">3.2</span> .Aprendizaje supervisado y no supervisado</h2>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Característica</th>
+<th>Supervisado</th>
+<th>No supervisado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Variable respuesta</td>
+<td>Conocida</td>
+<td>No se requiere</td>
+</tr>
+<tr class="even">
+<td>Objetivo</td>
+<td>Predecir o explicar una respuesta</td>
+<td>Descubrir patrones o estructuras</td>
+</tr>
+<tr class="odd">
+<td>Ejemplos</td>
+<td>Regresión y clasificación</td>
+<td>Conglomerados y reducción de dimensión</td>
+</tr>
+<tr class="even">
+<td>Evaluación</td>
+<td>Puede compararse con resultados conocidos</td>
+<td>Requiere criterios internos y validación contextual</td>
+</tr>
+</tbody>
+</table>
+<p>En el análisis de conglomerados no existe necesariamente una única clasificación correcta. La solución depende de las variables, la escala, la medida de distancia, el algoritmo y sus parámetros.</p>
+</section>
+<section id="aplicaciones-en-la-administración-pública" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="aplicaciones-en-la-administración-pública"><span class="header-section-number">3.3</span> .Aplicaciones en la administración pública</h2>
+<p>Algunas aplicaciones posibles son:</p>
+<ul>
+<li><strong>Planeación territorial:</strong> agrupar municipios según indicadores de desarrollo.</li>
+<li><strong>Política social:</strong> identificar perfiles de hogares o comunidades con necesidades semejantes.</li>
+<li><strong>Educación:</strong> agrupar instituciones según cobertura, deserción, resultados y recursos.</li>
+<li><strong>Salud pública:</strong> identificar territorios con perfiles similares de acceso y demanda de servicios.</li>
+<li><strong>Gestión institucional:</strong> clasificar dependencias según volumen de trámites, tiempos de atención y recursos.</li>
+<li><strong>Seguridad ciudadana:</strong> identificar zonas con patrones similares de incidentes, considerando las limitaciones y los riesgos éticos del uso de estos datos.</li>
+</ul>
+<p>Los conglomerados son herramientas exploratorias. No deben interpretarse automáticamente como categorías naturales, diagnósticos individuales ni explicaciones causales.</p>
+</section>
+</section>
+<section id="elementos-fundamentales" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> .Elementos fundamentales</h1>
+<section id="observaciones-y-variables" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="observaciones-y-variables"><span class="header-section-number">4.1</span> .Observaciones y variables</h2>
+<p>En una matriz de datos:</p>
+<ul>
+<li>Las filas representan las unidades de análisis: municipios, instituciones, barrios o usuarios.</li>
+<li>Las columnas representan las variables utilizadas para construir los grupos.</li>
+</ul>
+<p>Es importante que las variables seleccionadas sean pertinentes para el problema público. Incluir variables irrelevantes puede producir agrupamientos difíciles de interpretar.</p>
+</section>
+<section id="medidas-de-distancia" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="medidas-de-distancia"><span class="header-section-number">4.2</span> .Medidas de distancia</h2>
+<p>Los algoritmos de agrupamiento necesitan una forma de cuantificar la similitud o diferencia entre observaciones.</p>
+<p><strong>Distancia euclidiana</strong></p>
+<p>Es una de las medidas más utilizadas para variables cuantitativas:</p>
+<p><span class="math display">
+d(i,j)=\sqrt{\sum_{k=1}^{p}(x_{ik}-x_{jk})^2}
+</span></p>
+<p>Donde:</p>
+<ul>
+<li><span class="math inline">d(i,j)</span>: distancia entre las observaciones <span class="math inline">i</span> y <span class="math inline">j</span>.</li>
+<li><span class="math inline">x_{ik}</span>: valor de la variable <span class="math inline">k</span> en la observación <span class="math inline">i</span>.</li>
+<li><span class="math inline">x_{jk}</span>: valor de la variable <span class="math inline">k</span> en la observación <span class="math inline">j</span>.</li>
+<li><span class="math inline">p</span>: número de variables.</li>
+</ul>
+<p>Una distancia pequeña indica que las observaciones son similares según las variables incluidas.</p>
+<p><strong>Distancia Manhattan</strong></p>
+<p><span class="math display">
+d(i,j)=\sum_{k=1}^{p}|x_{ik}-x_{jk}|
+</span></p>
+<p>Suma las diferencias absolutas entre las variables de las dos observaciones.</p>
+<p><strong>Distancia de Gower</strong></p>
+<p>Es útil cuando se tienen variables de diferentes tipos, por ejemplo, cuantitativas, ordinales y nominales. Su aplicación requiere seleccionar una implementación adecuada y revisar cómo se tratan los valores faltantes.</p>
+</section>
+<section id="por-qué-estandarizar-las-variables" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="por-qué-estandarizar-las-variables"><span class="header-section-number">4.3</span> .¿Por qué estandarizar las variables?</h2>
+<p>Las variables pueden estar medidas en escalas diferentes. Por ejemplo:</p>
+<ul>
+<li>Población: número de habitantes.</li>
+<li>Pobreza: porcentaje.</li>
+<li>Ingreso: pesos.</li>
+<li>Cobertura educativa: porcentaje.</li>
+</ul>
+<p>Si se calcula una distancia euclidiana directamente, las variables con escalas numéricas grandes pueden dominar el cálculo.</p>
+<p>Una solución habitual es estandarizar mediante puntuaciones Z:</p>
+<p><span class="math display">
+Z_{ij}=\frac{X_{ij}-\bar X_j}{s_j}
+</span></p>
+<p>Donde:</p>
+<ul>
+<li><span class="math inline">X_{ij}</span>: valor de la observación <span class="math inline">i</span> en la variable <span class="math inline">j</span>.</li>
+<li><span class="math inline">\bar X_j</span>: media de la variable <span class="math inline">j</span>.</li>
+<li><span class="math inline">s_j</span>: desviación estándar de la variable <span class="math inline">j</span>.</li>
+</ul>
+<p>Después de estandarizar, las variables quedan expresadas en una escala comparable. La decisión de estandarizar debe responder al significado de las variables y al algoritmo utilizado.</p>
+</section>
+</section>
+<section id="técnicas-de-agrupamiento" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> .Técnicas de agrupamiento</h1>
+<section id="algoritmo-k-means" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="algoritmo-k-means"><span class="header-section-number">5.1</span> .Algoritmo k-means</h2>
+<p>K-means es un algoritmo de agrupamiento no jerárquico que divide las observaciones en <span class="math inline">K</span> grupos. Cada grupo se representa mediante un centroide, que corresponde al vector de medias de las variables para las observaciones asignadas al grupo.</p>
+<p>El algoritmo busca minimizar la suma de cuadrados dentro de los conglomerados:</p>
+<p><span class="math display">
+\underset{C_1,\ldots,C_K}{\operatorname{minimizar}}
+\sum_{k=1}^{K}\sum_{i\in C_k}
+\left\|x_i-\mu_k\right\|^2
+</span></p>
+<p>Donde:</p>
+<ul>
+<li><span class="math inline">K</span>: número de conglomerados.</li>
+<li><span class="math inline">C_k</span>: conjunto de observaciones asignadas al grupo <span class="math inline">k</span>.</li>
+<li><span class="math inline">x_i</span>: vector de características de la observación <span class="math inline">i</span>.</li>
+<li><span class="math inline">\mu_k</span>: centroide del conglomerado <span class="math inline">k</span>.</li>
+</ul>
+<p><strong>Etapas del algoritmo</strong></p>
+<ol type="1">
+<li>Definir el número de conglomerados <span class="math inline">K</span>.</li>
+<li>Seleccionar centros iniciales.</li>
+<li>Asignar cada observación al centroide más cercano.</li>
+<li>Calcular nuevamente los centroides.</li>
+<li>Repetir la asignación y actualización hasta alcanzar un criterio de convergencia.</li>
+</ol>
+<p><strong>Ventajas</strong></p>
+<ul>
+<li>Es relativamente sencillo de implementar.</li>
+<li>Funciona bien con datos cuantitativos y grupos compactos.</li>
+<li>Permite resumir los perfiles de los conglomerados mediante centroides.</li>
+</ul>
+<p><strong>Limitaciones</strong></p>
+<ul>
+<li>Se debe especificar previamente el número <span class="math inline">K</span>.</li>
+<li>Es sensible a valores atípicos y a la inicialización.</li>
+<li>Puede tener dificultades con grupos de formas muy diferentes.</li>
+<li>La estandarización suele ser importante cuando las variables están en escalas distintas.</li>
+</ul>
+</section>
+<section id="selección-del-número-de-conglomerados" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="selección-del-número-de-conglomerados"><span class="header-section-number">5.2</span> .Selección del número de conglomerados</h2>
+<p>No existe una regla universal para determinar el número óptimo de grupos. Se pueden combinar diferentes criterios.</p>
+<p><strong>Método del codo</strong></p>
+<p>Se calcula la suma de cuadrados dentro de los grupos (WSS, <em>Within-Cluster Sum of Squares</em>) para diferentes valores de <span class="math inline">K</span>. Al aumentar el número de conglomerados, el WSS disminuye. Se busca un punto a partir del cual la reducción adicional sea menos pronunciada.</p>
+<p><span class="math display">
+WSS(K)=\sum_{k=1}^{K}\sum_{i\in C_k}
+\|x_i-\mu_k\|^2
+</span></p>
+<p><strong>Coeficiente de silueta</strong></p>
+<p>La silueta evalúa qué tan bien se encuentra una observación dentro de su propio conglomerado frente a los conglomerados vecinos.</p>
+<p><span class="math display">
+s(i)=\frac{b(i)-a(i)}{\max\{a(i),b(i)\}}
+</span></p>
+<p>Donde:</p>
+<ul>
+<li><span class="math inline">a(i)</span>: distancia promedio entre la observación <span class="math inline">i</span> y las demás observaciones de su conglomerado.</li>
+<li><span class="math inline">b(i)</span>: menor distancia promedio entre <span class="math inline">i</span> y las observaciones de otro conglomerado.</li>
+</ul>
+<p>La silueta toma valores entre -1 y 1:</p>
+<ul>
+<li>Cercano a 1: observación bien asignada.</li>
+<li>Cercano a 0: observación ubicada entre dos grupos.</li>
+<li>Menor que 0: posiblemente está mejor ubicada en otro grupo.</li>
+</ul>
+<p>Una silueta promedio mayor puede indicar una solución más definida, pero debe interpretarse junto con el tamaño y la utilidad de los grupos.</p>
+</section>
+<section id="agrupamiento-jerárquico" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="agrupamiento-jerárquico"><span class="header-section-number">5.3</span> .Agrupamiento jerárquico</h2>
+<p>El agrupamiento jerárquico construye una estructura de grupos anidados que puede representarse mediante un dendrograma.</p>
+<p>En el enfoque aglomerativo:</p>
+<ol type="1">
+<li>Cada observación comienza como un conglomerado individual.</li>
+<li>Se identifican los dos conglomerados más cercanos.</li>
+<li>Se fusionan en un nuevo conglomerado.</li>
+<li>Se actualizan las distancias entre grupos.</li>
+<li>Se repite el proceso hasta que todas las observaciones formen un solo grupo.</li>
+</ol>
+<p><strong>Métodos de enlace</strong></p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Método</th>
+<th>Característica</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>single</code></td>
+<td>Distancia mínima entre observaciones de dos grupos</td>
+</tr>
+<tr class="even">
+<td><code>complete</code></td>
+<td>Distancia máxima entre observaciones de dos grupos</td>
+</tr>
+<tr class="odd">
+<td><code>average</code></td>
+<td>Promedio de las distancias entre observaciones de dos grupos</td>
+</tr>
+<tr class="even">
+<td><code>ward.D2</code></td>
+<td>Busca minimizar el incremento de la variabilidad interna al fusionar grupos</td>
+</tr>
+</tbody>
+</table>
+<p>El dendrograma permite explorar diferentes cantidades de conglomerados mediante un corte a una altura determinada.</p>
+<p><strong>Ventajas y limitaciones</strong></p>
+<p>El agrupamiento jerárquico permite visualizar la estructura de similitud sin definir desde el comienzo un número único de grupos. Sin embargo, las fusiones realizadas no se revierten y los resultados pueden depender de la distancia y del método de enlace.</p>
+</section>
+<section id="dbscan" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="dbscan"><span class="header-section-number">5.4</span> .DBSCAN</h2>
+<p>DBSCAN (<em>Density-Based Spatial Clustering of Applications with Noise</em>) identifica grupos a partir de la densidad de las observaciones.</p>
+<p>Sus parámetros principales son:</p>
+<ul>
+<li><code>eps</code>: radio máximo para considerar que dos observaciones están próximas.</li>
+<li><code>minPts</code>: número mínimo de observaciones requerido para considerar una región suficientemente densa.</li>
+</ul>
+<p>DBSCAN distingue:</p>
+<ul>
+<li><strong>Puntos núcleo:</strong> tienen al menos <code>minPts</code> observaciones dentro de su vecindad.</li>
+<li><strong>Puntos frontera:</strong> están cerca de un punto núcleo, pero no tienen suficientes vecinos para ser núcleo.</li>
+<li><strong>Ruido:</strong> no pertenece a un grupo según los parámetros definidos.</li>
+</ul>
+<p><strong>Ventajas</strong></p>
+<ul>
+<li>No exige definir previamente el número de conglomerados.</li>
+<li>Puede identificar grupos con formas no necesariamente esféricas.</li>
+<li>Permite identificar observaciones aisladas como ruido.</li>
+</ul>
+<p><strong>Limitaciones</strong></p>
+<ul>
+<li>Es sensible a la selección de <code>eps</code> y <code>minPts</code>.</li>
+<li>Puede tener dificultades cuando los grupos presentan densidades muy diferentes.</li>
+<li>La escala de las variables y la distancia utilizada influyen en el resultado.</li>
+</ul>
+</section>
+</section>
+<section id="preparación-del-entorno-de-trabajo-en-r" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> .Preparación del entorno de trabajo en R</h1>
+<section id="instalación-y-carga-de-paquetes" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="instalación-y-carga-de-paquetes"><span class="header-section-number">6.1</span> .Instalación y carga de paquetes</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar una sola vez si los paquetes no están instalados</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(c("tidyverse", "cluster", "factoextra", "dbscan", "NbClust"))</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cluster)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(factoextra)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dbscan)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Los paquetes cumplen las siguientes funciones:</p>
+<ul>
+<li><code>tidyverse</code>: manipulación y visualización de datos.</li>
+<li><code>cluster</code>: algoritmos y medidas para análisis de conglomerados.</li>
+<li><code>factoextra</code>: visualización de resultados de agrupamiento.</li>
+<li><code>dbscan</code>: implementación de DBSCAN.</li>
+</ul>
+</section>
+</section>
+<section id="ejemplo-aplicado" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> .Ejemplo aplicado</h1>
+<p><strong>agrupamiento de municipios según indicadores de gestión y desarrollo</strong></p>
+<section id="planteamiento-del-problema" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="planteamiento-del-problema"><span class="header-section-number">7.1</span> .Planteamiento del problema</h2>
+<p>Una gobernación desea identificar perfiles de municipios para apoyar la planeación de programas de inversión social. Para ello dispone de indicadores relacionados con:</p>
+<ul>
+<li>Pobreza multidimensional (%).</li>
+<li>Cobertura educativa (%).</li>
+<li>Cobertura de acueducto (%).</li>
+<li>Desempleo (%).</li>
+<li>Inversión social por habitante (miles de pesos).</li>
+</ul>
+<p>El objetivo es identificar municipios con características similares y describir las diferencias entre los grupos.</p>
+<blockquote class="blockquote">
+<p>Los datos que se construyen a continuación son simulados. No representan indicadores oficiales de municipios reales.</p>
+</blockquote>
+</section>
+<section id="construcción-de-una-base-simulada" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="construcción-de-una-base-simulada"><span class="header-section-number">7.2</span> .Construcción de una base simulada</h2>
+<p>Se crearán 60 municipios distribuidos inicialmente en tres perfiles ilustrativos. Esta estructura permite practicar las técnicas y visualizar grupos diferenciados.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2026</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>n_por_grupo <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>perfil <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="at">each =</span> n_por_grupo)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>datos_municipios <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">municipio =</span> <span class="fu">paste</span>(<span class="st">"Municipio"</span>, <span class="fu">sprintf</span>(<span class="st">"%02d"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">60</span>)),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">pobreza =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">45</span>, <span class="dv">5</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">25</span>, <span class="dv">4</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">12</span>, <span class="dv">3</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">cobertura_educativa =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">65</span>, <span class="dv">6</span>),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">78</span>, <span class="dv">5</span>),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">92</span>, <span class="dv">3</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">cobertura_acueducto =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">48</span>, <span class="dv">8</span>),</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">72</span>, <span class="dv">6</span>),</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">94</span>, <span class="dv">3</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">desempleo =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">16</span>, <span class="dv">2</span>),</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">11</span>, <span class="dv">2</span>),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">7</span>, <span class="fl">1.5</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">inversion_social =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">450</span>, <span class="dv">55</span>),</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">700</span>, <span class="dv">65</span>),</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    perfil <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="fu">rnorm</span>(<span class="dv">60</span>, <span class="dv">1000</span>, <span class="dv">90</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(pobreza, cobertura_educativa, cobertura_acueducto, desempleo),</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>      <span class="sc">~</span> <span class="fu">pmin</span>(<span class="fu">pmax</span>(.x, <span class="dv">0</span>), <span class="dv">100</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">inversion_social =</span> <span class="fu">pmax</span>(inversion_social, <span class="dv">50</span>)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos_municipios)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+  municipio    pobreza cobertura_educativa cobertura_acueducto desempleo
+  &lt;chr&gt;          &lt;dbl&gt;               &lt;dbl&gt;               &lt;dbl&gt;     &lt;dbl&gt;
+1 Municipio 01    47.6                60.3                57.0      17.0
+2 Municipio 02    39.6                72.9                31.2      17.6
+3 Municipio 03    45.7                66.6                31.3      17.7
+4 Municipio 04    44.6                71.1                37.7      17.1
+5 Municipio 05    41.7                66.3                56.6      13.5
+6 Municipio 06    32.4                68.7                55.2      15.2
+# ℹ 1 more variable: inversion_social &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>La variable <code>perfil</code> se utilizó solamente para generar los datos y no se incorporó a la base analítica. En una aplicación real, el analista no conocería de antemano los grupos.</p>
+</section>
+<section id="exploración-inicial" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="exploración-inicial"><span class="header-section-number">7.3</span> .Exploración inicial</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(datos_municipios)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 60
+Columns: 6
+$ municipio           &lt;chr&gt; "Municipio 01", "Municipio 02", "Municipio 03", "M…
+$ pobreza             &lt;dbl&gt; 47.60295, 39.60155, 45.69619, 44.57626, 41.66680, …
+$ cobertura_educativa &lt;dbl&gt; 60.34853, 72.86695, 66.56315, 71.08410, 66.29357, …
+$ cobertura_acueducto &lt;dbl&gt; 56.97490, 31.19469, 31.27303, 37.67120, 56.57593, …
+$ desempleo           &lt;dbl&gt; 16.950322, 17.583810, 17.662542, 17.097396, 13.515…
+$ inversion_social    &lt;dbl&gt; 512.5877, 409.2607, 518.0725, 482.4291, 505.4080, …</code></pre>
+</div>
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(datos_municipios)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  municipio            pobreza       cobertura_educativa cobertura_acueducto
+ Length:60          Min.   : 6.424   Min.   :55.48       Min.   : 31.19     
+ Class :character   1st Qu.:13.622   1st Qu.:70.55       1st Qu.: 53.78     
+ Mode  :character   Median :23.529   Median :78.09       Median : 74.85     
+                    Mean   :26.396   Mean   :78.99       Mean   : 72.32     
+                    3rd Qu.:41.063   3rd Qu.:89.96       3rd Qu.: 92.09     
+                    Max.   :51.735   Max.   :97.29       Max.   :100.00     
+   desempleo      inversion_social
+ Min.   : 3.817   Min.   : 353.6  
+ 1st Qu.: 7.780   1st Qu.: 504.1  
+ Median :10.985   Median : 674.2  
+ Mean   :11.412   Mean   : 722.2  
+ 3rd Qu.:14.631   3rd Qu.: 943.6  
+ Max.   :19.643   Max.   :1196.1  </code></pre>
+</div>
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Verificar datos faltantes</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(datos_municipios))</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>          municipio             pobreza cobertura_educativa cobertura_acueducto 
+                  0                   0                   0                   0 
+          desempleo    inversion_social 
+                  0                   0 </code></pre>
+</div>
+</div>
+<p><strong>Visualización de algunas relaciones:</strong></p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  datos_municipios,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> pobreza, <span class="at">y =</span> cobertura_acueducto)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Pobreza y cobertura de acueducto"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Pobreza multidimensional (%)"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Cobertura de acueducto (%)"</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="selección-de-variables-y-estandarización" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="selección-de-variables-y-estandarización"><span class="header-section-number">7.4</span> .Selección de variables y estandarización</h2>
+<p>Se excluye el nombre del municipio porque es un identificador y no una característica cuantitativa de desarrollo.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> datos_municipios <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    pobreza,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    cobertura_educativa,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    cobertura_acueducto,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    desempleo,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    inversion_social</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Estandarizar las variables</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>datos_escalados <span class="ot">&lt;-</span> <span class="fu">scale</span>(variables)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos_escalados)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>       pobreza cobertura_educativa cobertura_acueducto desempleo
+[1,] 1.5589331          -1.6323476          -0.7479088 1.3934428
+[2,] 0.9707401          -0.5361291          -2.0040300 1.5528185
+[3,] 1.4187652          -1.0881432          -2.0002132 1.5726262
+[4,] 1.3364374          -0.6922502          -1.6884670 1.4304442
+[5,] 1.1225597          -1.1117501          -0.7673483 0.5292828
+[6,] 0.4427827          -0.9027362          -0.8363891 0.9463616
+     inversion_social
+[1,]       -0.8715273
+[2,]       -1.3010896
+[3,]       -0.8487252
+[4,]       -0.9969061
+[5,]       -0.9013756
+[6,]       -1.5325520</code></pre>
+</div>
+</div>
+<p>La estandarización evita que la inversión social, medida en miles de pesos, domine las distancias debido a su escala numérica.</p>
+</section>
+</section>
+<section id="aplicación-del-algoritmo-k-means" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> .Aplicación del algoritmo k-means</h1>
+<section id="método-del-codo" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="método-del-codo"><span class="header-section-number">8.1</span> .Método del codo</h2>
+<p>Se calcula el WSS para valores de <span class="math inline">K</span> entre 1 y 10.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  datos_escalados,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  kmeans,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"wss"</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">k.max =</span> <span class="dv">10</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">nstart =</span> <span class="dv">25</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Método del codo"</span>,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Número de conglomerados (K)"</span>,</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Suma de cuadrados dentro de los grupos"</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Interpretación:</strong> se identifica el punto donde agregar otro conglomerado deja de producir una reducción importante del WSS. Este criterio es orientador y no determina por sí solo una solución definitiva.</p>
+</section>
+<section id="método-de-la-silueta" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="método-de-la-silueta"><span class="header-section-number">8.2</span> .Método de la silueta</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  datos_escalados,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  kmeans,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"silhouette"</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">k.max =</span> <span class="dv">10</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">nstart =</span> <span class="dv">25</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Selección de K mediante silueta"</span>,</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Número de conglomerados (K)"</span>,</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Ancho promedio de silueta"</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>La solución con mayor silueta promedio puede ofrecer una separación más clara. Sin embargo, conviene contrastarla con el método del codo y con la interpretación sustantiva de los grupos.</p>
+</section>
+<section id="entrenamiento-del-modelo-k-means" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="entrenamiento-del-modelo-k-means"><span class="header-section-number">8.3</span> .Entrenamiento del modelo k-means</h2>
+<p>Para el ejemplo se utilizarán tres conglomerados, como una decisión ilustrativa que deberá contrastarse con los gráficos y métricas anteriores.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>modelo_kmeans <span class="ot">&lt;-</span> <span class="fu">kmeans</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  datos_escalados,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">centers =</span> <span class="dv">3</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">nstart =</span> <span class="dv">50</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">iter.max =</span> <span class="dv">100</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>modelo_kmeans</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>K-means clustering with 3 clusters of sizes 20, 20, 20
+
+Cluster means:
+     pobreza cobertura_educativa cobertura_acueducto desempleo inversion_social
+1 -0.1462568         -0.06142067           0.1228223 -0.185692      -0.09773602
+2  1.2229607         -1.09559169          -1.2049736  1.199290      -1.09925699
+3 -1.0767039          1.15701236           1.0821513 -1.013598       1.19699302
+
+Clustering vector:
+ [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+[39] 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+
+Within cluster sum of squares by cluster:
+[1] 12.164726 15.504053  7.170122
+ (between_SS / total_SS =  88.2 %)
+
+Available components:
+
+[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
+[6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
+</div>
+</div>
+<p>Argumentos:</p>
+<ul>
+<li><code>centers = 3</code>: solicita tres conglomerados.</li>
+<li><code>nstart = 50</code>: realiza 50 inicializaciones aleatorias y conserva la mejor solución según el criterio interno.</li>
+<li><code>iter.max = 100</code>: establece el máximo de iteraciones por inicialización.</li>
+</ul>
+</section>
+<section id="asignación-de-conglomerados" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="asignación-de-conglomerados"><span class="header-section-number">8.4</span> .Asignación de conglomerados</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>datos_clasificados <span class="ot">&lt;-</span> datos_municipios <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">conglomerado =</span> <span class="fu">factor</span>(modelo_kmeans<span class="sc">$</span>cluster)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(datos_clasificados)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 7
+  municipio    pobreza cobertura_educativa cobertura_acueducto desempleo
+  &lt;chr&gt;          &lt;dbl&gt;               &lt;dbl&gt;               &lt;dbl&gt;     &lt;dbl&gt;
+1 Municipio 01    47.6                60.3                57.0      17.0
+2 Municipio 02    39.6                72.9                31.2      17.6
+3 Municipio 03    45.7                66.6                31.3      17.7
+4 Municipio 04    44.6                71.1                37.7      17.1
+5 Municipio 05    41.7                66.3                56.6      13.5
+6 Municipio 06    32.4                68.7                55.2      15.2
+# ℹ 2 more variables: inversion_social &lt;dbl&gt;, conglomerado &lt;fct&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="visualización-de-los-conglomerados" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="visualización-de-los-conglomerados"><span class="header-section-number">8.5</span> .Visualización de los conglomerados</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_cluster</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  modelo_kmeans,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> datos_escalados,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">geom =</span> <span class="st">"point"</span>,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ellipse.type =</span> <span class="st">"norm"</span>,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ggtheme =</span> <span class="fu">theme_minimal</span>()</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Agrupamiento de municipios mediante k-means"</span>,</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Representación en dos dimensiones"</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>La representación utiliza una proyección de los datos para facilitar la visualización. Por tanto, las distancias observadas en el gráfico pueden no reflejar exactamente todas las dimensiones originales.</p>
+</section>
+<section id="perfil-de-los-conglomerados" class="level2" data-number="8.6">
+<h2 data-number="8.6" class="anchored" data-anchor-id="perfil-de-los-conglomerados"><span class="header-section-number">8.6</span> .Perfil de los conglomerados</h2>
+<p>Se calculan los promedios de las variables originales para interpretar los grupos.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>perfil_conglomerados <span class="ot">&lt;-</span> datos_clasificados <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(conglomerado) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">numero_municipios =</span> <span class="fu">n</span>(),</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">pobreza_media =</span> <span class="fu">mean</span>(pobreza),</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cobertura_educativa_media =</span> <span class="fu">mean</span>(cobertura_educativa),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">cobertura_acueducto_media =</span> <span class="fu">mean</span>(cobertura_acueducto),</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">desempleo_medio =</span> <span class="fu">mean</span>(desempleo),</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">inversion_social_media =</span> <span class="fu">mean</span>(inversion_social),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>perfil_conglomerados</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 7
+  conglomerado numero_municipios pobreza_media cobertura_educativa_media
+  &lt;fct&gt;                    &lt;int&gt;         &lt;dbl&gt;                     &lt;dbl&gt;
+1 1                           20          24.4                      78.3
+2 2                           20          43.0                      66.5
+3 3                           20          11.7                      92.2
+# ℹ 3 more variables: cobertura_acueducto_media &lt;dbl&gt;, desempleo_medio &lt;dbl&gt;,
+#   inversion_social_media &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p><strong>Interpretación:</strong> los promedios permiten caracterizar cada grupo. Por ejemplo, un conglomerado podría presentar mayor pobreza, menor cobertura de acueducto y menor inversión social. Esta descripción podría orientar estudios de focalización territorial, pero no debe convertirse automáticamente en una decisión de asignación de recursos sin análisis adicional.</p>
+<p>Gráfico de perfiles:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>perfil_largo <span class="ot">&lt;-</span> datos_clasificados <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(conglomerado, pobreza, cobertura_educativa,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>         cobertura_acueducto, desempleo, inversion_social) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="sc">-</span>conglomerado,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"indicador"</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"valor"</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(conglomerado, indicador) <span class="sc">%&gt;%</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">promedio =</span> <span class="fu">mean</span>(valor), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  perfil_largo,</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> indicador, <span class="at">y =</span> promedio, <span class="at">group =</span> conglomerado,</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> conglomerado)</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Perfil promedio de los conglomerados"</span>,</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Indicador"</span>,</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Promedio en escala original"</span>,</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Conglomerado"</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">25</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Como los indicadores tienen unidades distintas, el gráfico facilita la comparación dentro de cada indicador, pero no debe interpretarse comparando directamente la magnitud entre ejes.</p>
+</section>
+</section>
+<section id="agrupamiento-jerárquico-1" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> .Agrupamiento jerárquico</h1>
+<section id="calcular-la-matriz-de-distancias" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="calcular-la-matriz-de-distancias"><span class="header-section-number">9.1</span> .Calcular la matriz de distancias</h2>
+<p>Se utilizará la distancia euclidiana sobre las variables estandarizadas.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>distancias <span class="ot">&lt;-</span> <span class="fu">dist</span>(</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  datos_escalados,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"euclidean"</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="construir-el-modelo-jerárquico" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="construir-el-modelo-jerárquico"><span class="header-section-number">9.2</span> .Construir el modelo jerárquico</h2>
+<p>Se empleará el método de Ward.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>modelo_jerarquico <span class="ot">&lt;-</span> <span class="fu">hclust</span>(</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  distancias,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"ward.D2"</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>modelo_jerarquico</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+hclust(d = distancias, method = "ward.D2")
+
+Cluster method   : ward.D2 
+Distance         : euclidean 
+Number of objects: 60 </code></pre>
+</div>
+</div>
+</section>
+<section id="construir-el-dendrograma" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="construir-el-dendrograma"><span class="header-section-number">9.3</span> .Construir el dendrograma</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  modelo_jerarquico,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> datos_municipios<span class="sc">$</span>municipio,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">"Dendrograma de municipios"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">"Municipios"</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">"Distancia de fusión"</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">sub =</span> <span class="st">""</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">cex =</span> <span class="fl">0.65</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="fu">rect.hclust</span>(</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  modelo_jerarquico,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>,</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">border =</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">4</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>El dendrograma representa el proceso de unión de los municipios. Las ramas que se fusionan a distancias pequeñas corresponden a observaciones o grupos relativamente similares.</p>
+</section>
+<section id="cortar-el-dendrograma" class="level2" data-number="9.4">
+<h2 data-number="9.4" class="anchored" data-anchor-id="cortar-el-dendrograma"><span class="header-section-number">9.4</span> .Cortar el dendrograma</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>grupos_jerarquicos <span class="ot">&lt;-</span> <span class="fu">cutree</span>(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  modelo_jerarquico,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>datos_jerarquicos <span class="ot">&lt;-</span> datos_municipios <span class="sc">%&gt;%</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">conglomerado_jerarquico =</span> <span class="fu">factor</span>(grupos_jerarquicos)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(datos_jerarquicos<span class="sc">$</span>conglomerado_jerarquico)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ 1  2  3 
+20 20 20 </code></pre>
+</div>
+</div>
+</section>
+<section id="comparar-los-métodos" class="level2" data-number="9.5">
+<h2 data-number="9.5" class="anchored" data-anchor-id="comparar-los-métodos"><span class="header-section-number">9.5</span> .Comparar los métodos</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>comparacion_metodos <span class="ot">&lt;-</span> datos_municipios <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">kmeans =</span> <span class="fu">factor</span>(modelo_kmeans<span class="sc">$</span>cluster),</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">jerarquico =</span> <span class="fu">factor</span>(grupos_jerarquicos)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Kmeans =</span> comparacion_metodos<span class="sc">$</span>kmeans,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Jerarquico =</span> comparacion_metodos<span class="sc">$</span>jerarquico</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Jerarquico
+Kmeans  1  2  3
+     1  0 20  0
+     2 20  0  0
+     3  0  0 20</code></pre>
+</div>
+</div>
+<p>Los números de los grupos son etiquetas arbitrarias. Por ejemplo, el conglomerado 1 de k-means no necesariamente corresponde al conglomerado 1 del método jerárquico. La comparación debe centrarse en la composición de los grupos y sus perfiles.</p>
+</section>
+</section>
+<section id="aplicación-de-dbscan" class="level1" data-number="10">
+<h1 data-number="10"><span class="header-section-number">10</span> .Aplicación de DBSCAN</h1>
+<p>DBSCAN permite identificar grupos según la densidad de las observaciones y detectar puntos que no se ajustan a los grupos encontrados.</p>
+<section id="ajustar-dbscan" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="ajustar-dbscan"><span class="header-section-number">10.1</span> .Ajustar DBSCAN</h2>
+<p>Los parámetros <code>eps</code> y <code>minPts</code> deben seleccionarse de acuerdo con la escala de los datos y la estructura de las distancias. El siguiente ajuste es un punto de partida ilustrativo, no una configuración universal.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>modelo_dbscan <span class="ot">&lt;-</span> <span class="fu">dbscan</span>(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  datos_escalados,</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">eps =</span> <span class="fl">0.8</span>,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">minPts =</span> <span class="dv">5</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>modelo_dbscan</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>DBSCAN clustering for 60 objects.
+Parameters: eps = 0.8, minPts = 5
+Using euclidean distances and borderpoints = TRUE
+The clustering contains 3 cluster(s) and 6 noise points.
+
+ 0  1  2  3 
+ 6 18 17 19 
+
+Available fields: cluster, eps, minPts, metric, borderPoints</code></pre>
+</div>
+</div>
+</section>
+<section id="identificar-grupos-y-ruido" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="identificar-grupos-y-ruido"><span class="header-section-number">10.2</span> .Identificar grupos y ruido</h2>
+<p>En el resultado, el grupo 0 representa observaciones clasificadas como ruido.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>datos_dbscan <span class="ot">&lt;-</span> datos_municipios <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">conglomerado_dbscan =</span> <span class="fu">factor</span>(modelo_dbscan<span class="sc">$</span>cluster)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(datos_dbscan<span class="sc">$</span>conglomerado_dbscan)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ 0  1  2  3 
+ 6 18 17 19 </code></pre>
+</div>
+</div>
+</section>
+<section id="visualizar-el-resultado" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="visualizar-el-resultado"><span class="header-section-number">10.3</span> .Visualizar el resultado</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_cluster</span>(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">as.matrix</span>(datos_escalados),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">cluster =</span> modelo_dbscan<span class="sc">$</span>cluster</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">geom =</span> <span class="st">"point"</span>,</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">ellipse =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">ggtheme =</span> <span class="fu">theme_minimal</span>()</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Agrupamiento mediante DBSCAN"</span>,</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"El grupo 0 corresponde a observaciones clasificadas como ruido"</span></span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Si la configuración no produce una agrupación útil, se deben explorar otros valores de <code>eps</code> y <code>minPts</code>, revisar la escala de los datos y analizar la distribución de distancias. No se debe escoger un parámetro solamente porque genera una cantidad de grupos deseada.</p>
+</section>
+</section>
+<section id="evaluación-de-la-calidad-de-los-conglomerados" class="level1" data-number="11">
+<h1 data-number="11"><span class="header-section-number">11</span> .Evaluación de la calidad de los conglomerados</h1>
+<section id="silueta-para-k-means" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="silueta-para-k-means"><span class="header-section-number">11.1</span> .Silueta para k-means</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>sil_kmeans <span class="ot">&lt;-</span> <span class="fu">silhouette</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  modelo_kmeans<span class="sc">$</span>cluster,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  distancias</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_silhouette</span>(sil_kmeans)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  cluster size ave.sil.width
+1       1   20          0.54
+2       2   20          0.58
+3       3   20          0.67</code></pre>
+</div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Promedio de silueta:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(sil_kmeans[, <span class="st">"sil_width"</span>])</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.5974813</code></pre>
+</div>
+</div>
+<p>Una silueta promedio positiva y relativamente alta sugiere que las observaciones están más próximas a su propio grupo que a los grupos vecinos. Valores bajos o negativos pueden indicar solapamiento o asignaciones poco claras.</p>
+</section>
+<section id="tamaño-de-los-conglomerados" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="tamaño-de-los-conglomerados"><span class="header-section-number">11.2</span> .Tamaño de los conglomerados</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(datos_clasificados<span class="sc">$</span>conglomerado)</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ 1  2  3 
+20 20 20 </code></pre>
+</div>
+</div>
+<p>También se puede calcular la proporción de municipios en cada grupo:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>datos_clasificados <span class="sc">%&gt;%</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(conglomerado) <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">porcentaje =</span> <span class="dv">100</span> <span class="sc">*</span> n <span class="sc">/</span> <span class="fu">sum</span>(n)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copiar al portapapeles" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  conglomerado     n porcentaje
+  &lt;fct&gt;        &lt;int&gt;      &lt;dbl&gt;
+1 1               20       33.3
+2 2               20       33.3
+3 3               20       33.3</code></pre>
+</div>
+</div>
+<p>Un grupo muy pequeño puede ser relevante si representa municipios con características excepcionales, pero también puede reflejar valores atípicos o una solución demasiado fragmentada.</p>
+</section>
+<section id="estabilidad-y-validación-externa" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="estabilidad-y-validación-externa"><span class="header-section-number">11.3</span> .Estabilidad y validación externa</h2>
+<p>La calidad interna no es suficiente. Se recomienda:</p>
+<ul>
+<li>Repetir el análisis con diferentes semillas o muestras.</li>
+<li>Examinar si los perfiles se mantienen al cambiar algunas variables.</li>
+<li>Comparar resultados con conocimiento territorial y fuentes administrativas.</li>
+<li>Evaluar si los grupos son interpretables y útiles para la política pública.</li>
+<li>Si existen categorías externas confiables, contrastar los grupos sin confundir esa comparación con una validación causal.</li>
+</ul>
+</section>
+</section>
+<section id="consideraciones-para-la-administración-pública" class="level1" data-number="12">
+<h1 data-number="12"><span class="header-section-number">12</span> .Consideraciones para la administración pública</h1>
+<p>El análisis de conglomerados puede apoyar la planeación y la identificación de perfiles territoriales, pero requiere precauciones:</p>
+<ol type="1">
+<li><strong>Calidad de los datos:</strong> indicadores desactualizados o incompletos pueden producir grupos engañosos.</li>
+<li><strong>Selección de variables:</strong> las variables deben tener justificación técnica y relación con el problema público.</li>
+<li><strong>Escalas y ponderaciones:</strong> estandarizar no resuelve por sí solo las diferencias conceptuales entre indicadores.</li>
+<li><strong>Sesgos territoriales:</strong> los grupos pueden reflejar desigualdades históricas o diferencias de medición.</li>
+<li><strong>Interpretación:</strong> un conglomerado no constituye una categoría oficial ni una explicación causal.</li>
+<li><strong>Transparencia:</strong> documentar variables, transformaciones, distancias, algoritmos y parámetros.</li>
+<li><strong>Uso responsable:</strong> no utilizar agrupamientos como único fundamento para negar beneficios, excluir comunidades o tomar decisiones individuales de alto impacto.</li>
+</ol>
+</section>
+<section id="actividades-para-el-estudiante" class="level1" data-number="13">
+<h1 data-number="13"><span class="header-section-number">13</span> .Actividades para el estudiante</h1>
+<section id="actividad-1." class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="actividad-1."><span class="header-section-number">13.1</span> .Actividad 1.</h2>
+<p><strong>Comprensión conceptual</strong></p>
+<p>Responda con sus propias palabras:</p>
+<ol type="1">
+<li>¿Qué es el análisis de conglomerados?</li>
+<li>¿Cuál es la diferencia entre aprendizaje supervisado y no supervisado?</li>
+<li>¿Por qué es importante estandarizar las variables antes de aplicar k-means?</li>
+<li>¿Qué representa el centroide de un conglomerado?</li>
+<li>¿En qué consiste el método del codo?</li>
+<li>¿Cómo se interpreta el coeficiente de silueta?</li>
+<li>¿Qué información proporciona un dendrograma?</li>
+<li>¿Cuál es la diferencia entre k-means y DBSCAN?</li>
+<li>¿Por qué los resultados del agrupamiento no deben interpretarse como relaciones causales?</li>
+</ol>
+</section>
+<section id="actividad-2." class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="actividad-2."><span class="header-section-number">13.2</span> .Actividad 2.</h2>
+<p><strong>Agrupamiento de municipios</strong></p>
+<p>Utilizando la base <code>datos_municipios</code>:</p>
+<ol type="1">
+<li>Seleccione al menos cuatro indicadores.</li>
+<li>Estandarice las variables.</li>
+<li>Aplique el método del codo para valores de <span class="math inline">K</span> entre 1 y 10.</li>
+<li>Aplique el método de la silueta.</li>
+<li>Justifique el número de conglomerados seleccionado.</li>
+<li>Entrene un modelo k-means con al menos 30 inicializaciones.</li>
+<li>Identifique los municipios de cada grupo.</li>
+<li>Construya una tabla con los perfiles promedio.</li>
+<li>Interprete las características de cada conglomerado.</li>
+<li>Elabore una recomendación para la planeación territorial.</li>
+</ol>
+</section>
+<section id="actividad-3." class="level2" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="actividad-3."><span class="header-section-number">13.3</span> .Actividad 3.</h2>
+<p><strong>Agrupamiento de instituciones educativas</strong></p>
+<p>Una secretaría de educación desea identificar perfiles de instituciones educativas. Construya una base simulada de al menos 100 instituciones con las variables:</p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>estudiantes</code></td>
+<td>Número de estudiantes matriculados</td>
+</tr>
+<tr class="even">
+<td><code>docentes</code></td>
+<td>Número de docentes</td>
+</tr>
+<tr class="odd">
+<td><code>desercion</code></td>
+<td>Tasa de deserción (%)</td>
+</tr>
+<tr class="even">
+<td><code>cobertura_internet</code></td>
+<td>Porcentaje de estudiantes con acceso a internet</td>
+</tr>
+<tr class="odd">
+<td><code>resultados_saber</code></td>
+<td>Puntaje promedio en una prueba estandarizada</td>
+</tr>
+<tr class="even">
+<td><code>inversion_estudiante</code></td>
+<td>Inversión anual por estudiante, en miles de pesos</td>
+</tr>
+</tbody>
+</table>
+<p>Desarrolle las siguientes tareas:</p>
+<ol type="1">
+<li>Genere los datos con <code>set.seed()</code>.</li>
+<li>Realice un análisis exploratorio.</li>
+<li>Revise valores faltantes y valores atípicos.</li>
+<li>Estandarice las variables pertinentes.</li>
+<li>Aplique k-means y determine un número razonable de conglomerados.</li>
+<li>Aplique agrupamiento jerárquico con el método <code>ward.D2</code>.</li>
+<li>Compare los resultados de ambos métodos.</li>
+<li>Caracterice los grupos mediante tablas y gráficos.</li>
+<li>Proponga acciones diferenciadas de apoyo institucional.</li>
+<li>Explique las limitaciones del análisis.</li>
+</ol>
+</section>
+<section id="actividad-4." class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="actividad-4."><span class="header-section-number">13.4</span> .Actividad 4.</h2>
+<p><strong>Comparación de técnicas</strong></p>
+<p>Utilice una misma base de datos y compare k-means, agrupamiento jerárquico y DBSCAN.</p>
+<ol type="1">
+<li>¿Cuántos grupos identifica cada método?</li>
+<li>¿Qué observaciones quedan clasificadas como ruido en DBSCAN?</li>
+<li>¿Cuál es el promedio de silueta de la solución k-means?</li>
+<li>¿Qué método genera grupos más fáciles de interpretar?</li>
+<li>¿Los resultados son estables al modificar los parámetros?</li>
+<li>¿Cuál técnica recomendaría para el problema estudiado? Justifique.</li>
+</ol>
+</section>
+<section id="actividad-5." class="level2" data-number="13.5">
+<h2 data-number="13.5" class="anchored" data-anchor-id="actividad-5."><span class="header-section-number">13.5</span> .Actividad 5.</h2>
+<p><strong>Reflexión sobre política pública</strong></p>
+<p>Una gobernación agrupa municipios con indicadores de pobreza, cobertura educativa y acceso a servicios públicos. Decide asignar recursos únicamente a los municipios del conglomerado con mayor pobreza promedio.</p>
+<p>Analice críticamente esta decisión:</p>
+<ol type="1">
+<li>¿Qué ventajas puede ofrecer el agrupamiento?</li>
+<li>¿Qué limitaciones presenta utilizar el promedio del grupo para asignar recursos?</li>
+<li>¿Podrían existir municipios con necesidades particulares dentro de otros conglomerados?</li>
+<li>¿Qué otros criterios deberían considerarse para asignar recursos públicos?</li>
+<li>¿Cómo garantizaría transparencia y equidad en la decisión?</li>
+</ol>
+</section>
+</section>
+<section id="reto-de-aplicación" class="level1" data-number="14">
+<h1 data-number="14"><span class="header-section-number">14</span> .Reto de aplicación</h1>
+<p>Seleccione una problemática de administración pública que pueda estudiarse mediante técnicas de agrupamiento. Algunas posibilidades son:</p>
+<ul>
+<li>Clasificación exploratoria de municipios según indicadores de desarrollo.</li>
+<li>Agrupamiento de instituciones educativas según cobertura y resultados.</li>
+<li>Identificación de perfiles de centros de salud según capacidad y demanda.</li>
+<li>Segmentación de dependencias según eficiencia operativa.</li>
+<li>Agrupamiento de barrios según acceso a servicios públicos.</li>
+</ul>
+<p>Elabore un informe que contenga:</p>
+<ol type="1">
+<li>Descripción del problema y objetivo del análisis.</li>
+<li>Unidad de análisis y descripción de las variables.</li>
+<li>Justificación de la selección de variables.</li>
+<li>Exploración y preparación de los datos.</li>
+<li>Estandarización y medida de distancia.</li>
+<li>Aplicación de por lo menos dos técnicas de agrupamiento.</li>
+<li>Criterios utilizados para seleccionar la solución.</li>
+<li>Caracterización e interpretación de los grupos.</li>
+<li>Recomendaciones para la gestión pública.</li>
+<li>Limitaciones y consideraciones éticas.</li>
+</ol>
+</section>
+<section id="conclusiones" class="level1" data-number="15">
+<h1 data-number="15"><span class="header-section-number">15</span> .Conclusiones</h1>
+<p>El análisis de conglomerados permite descubrir patrones y construir perfiles de unidades territoriales, instituciones o usuarios a partir de sus características. K-means es útil para formar grupos alrededor de centroides; el agrupamiento jerárquico permite explorar relaciones mediante dendrogramas; y DBSCAN identifica agrupaciones basadas en densidad y observaciones aisladas.</p>
+<p>La calidad de los resultados depende de la selección de variables, la preparación de los datos, la escala de medición, la distancia y los parámetros del algoritmo. Por ello, es conveniente combinar criterios estadísticos con conocimiento del contexto institucional.</p>
+<p>En la administración pública, los conglomerados pueden apoyar diagnósticos y estrategias diferenciadas, pero no reemplazan el análisis social, territorial ni la deliberación pública. Sus resultados deben ser transparentes, verificables y utilizados con criterios de equidad.</p>
+</section>
+<section id="referencias-y-recursos" class="level1" data-number="16">
+<h1 data-number="16"><span class="header-section-number">16</span> .Referencias y recursos</h1>
+<ul>
+<li>Kaufman, L., &amp; Rousseeuw, P. J. (1990). <em>Finding Groups in Data: An Introduction to Cluster Analysis</em>. Wiley.</li>
+<li>MacQueen, J. (1967). Some methods for classification and analysis of multivariate observations. <em>Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics and Probability</em>, 1, 281–297.</li>
+<li>Ester, M., Kriegel, H.-P., Sander, J., &amp; Xu, X. (1996). A density-based algorithm for discovering clusters in large spatial databases with noise. <em>Proceedings of the Second International Conference on Knowledge Discovery and Data Mining</em>, 226–231.</li>
+<li>Documentación de <code>stats::kmeans()</code>: https://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html</li>
+<li>Documentación de <code>cluster</code>: https://cran.r-project.org/package=cluster</li>
+<li>Documentación de <code>factoextra</code>: https://cran.r-project.org/package=factoextra</li>
+<li>Documentación de <code>dbscan</code>: https://cran.r-project.org/package=dbscan</li>
+</ul>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copiado");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copiado");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+          // target, if specified
+          link.setAttribute("target", "_blank");
+          if (link.getAttribute("rel") === null) {
+            link.setAttribute("rel", "noopener");
+          }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<script src="index_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
